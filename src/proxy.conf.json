@@ -1,0 +1,15 @@
+[
+  {
+    "context": [
+      "/customer",
+      "/category",
+      "/product",
+      "/cart",
+      "/order",
+      "/outlet"
+    ],
+    "target": "https://backend2.owct.me",
+    "secure": false,
+    "changeOrigin": true
+  }
+]

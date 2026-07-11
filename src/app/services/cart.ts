@@ -1,0 +1,92 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { CartItem } from '../models';
+import { environment } from '../../environments/environment';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class CartService {
+  private http = inject(HttpClient);
+  private cartSubject = new BehaviorSubject<CartItem[]>([]);
+  public cart$ = this.cartSubject.asObservable();
+
+  // For compatibility with components using signals/methods
+  cartItems() {
+    return this.cartSubject.value;
+  }
+
+  cartSummary() {
+    const items = this.cartSubject.value;
+    const subtotal = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+    const taxes = subtotal * 0.05;
+    const deliveryCharge = 50;
+    const itemSavings = items.reduce((sum, item) => {
+      if (item.product.originalPrice && item.product.originalPrice > item.product.price) {
+        return sum + ((item.product.originalPrice - item.product.price) * item.quantity);
+      }
+      return sum;
+    }, 0);
+    const discount = 0;
+    return {
+      subtotal,
+      discount,
+      taxes,
+      deliveryCharge,
+      packageCharge: 0,
+      savedAmount: discount + itemSavings,
+      total: subtotal + taxes + deliveryCharge - discount,
+      grandTotal: subtotal + taxes + deliveryCharge - discount
+    };
+  }
+
+  clearCart() {
+    this.cartSubject.next([]);
+  }
+
+  updateQuantity(productId: string, quantity: number) {
+    let current = this.cartSubject.value;
+    const item = current.find(i => i.product.id === productId);
+    if(item) {
+      if(quantity <= 0) {
+        current = current.filter(i => i.product.id !== productId);
+      } else {
+        item.quantity = quantity;
+      }
+      this.cartSubject.next([...current]);
+    }
+  }
+
+  getCart(customerPhoneNo: string, outletId: string): Observable<any> {
+    return this.http.post<{success: boolean, data: any}>(`${environment.apiUrl}/cart/get-cart-details`, {
+      customerPhoneNo: customerPhoneNo,
+      outletId: outletId
+    }).pipe(map(res => {
+      this.cartSubject.next(res.data.items || []);
+      return res.data;
+    }));
+  }
+
+  addToCart(product: any) {
+    const current = this.cartSubject.value;
+    const existing = current.find(i => i.product.id === product.id);
+    if (existing) {
+      existing.quantity++;
+    } else {
+      current.push({ product, quantity: 1 });
+    }
+    this.cartSubject.next([...current]);
+    // Optionally call updateCart API here
+  }
+
+  updateCart(customerPhoneNo: string, outletId: string, items: CartItem[], deliveryType: string): Observable<any> {
+    return this.http.post<{success: boolean, data: any}>(`${environment.apiUrl}/cart/update`, {
+      customerPhoneNo: customerPhoneNo,
+      outletId: outletId,
+      items: items,
+      deliveryType: deliveryType
+    }).pipe(map(res => res.data));
+  }
+}
