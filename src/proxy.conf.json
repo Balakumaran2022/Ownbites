@@ -6,7 +6,8 @@
       "/product",
       "/cart",
       "/order",
-      "/outlet"
+      "/outlet",
+      "/item"
     ],
     "target": "https://backend2.owct.me",
     "secure": false,

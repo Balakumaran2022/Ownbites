@@ -3,6 +3,48 @@
   publish = "dist/food-ordering-app/browser"
 
 [[redirects]]
+  from = "/customer/*"
+  to = "https://backend2.owct.me/customer/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/category/*"
+  to = "https://backend2.owct.me/category/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/product/*"
+  to = "https://backend2.owct.me/product/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/cart/*"
+  to = "https://backend2.owct.me/cart/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/order/*"
+  to = "https://backend2.owct.me/order/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/outlet/*"
+  to = "https://backend2.owct.me/outlet/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/item/*"
+  to = "https://backend2.owct.me/item/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
