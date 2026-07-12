@@ -20,7 +20,6 @@ const CONSENT_VER    = 1;    // increment to force re-consent on policy update
   standalone: true,
   imports: [CommonModule, FormsModule],
   styles: [`
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     :host { font-family:'Inter',sans-serif; }
 
     @keyframes slideUp {

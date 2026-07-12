@@ -45,6 +45,25 @@
   force = true
 
 [[redirects]]
+  from = "/organization/*"
+  to = "https://backend2.owct.me/organization/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/banner/*"
+  to = "https://backend2.owct.me/banner/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/discount/*"
+  to = "https://backend2.owct.me/discount/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+

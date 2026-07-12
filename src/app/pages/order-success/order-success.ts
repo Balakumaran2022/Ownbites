@@ -29,8 +29,7 @@ import { UiButton } from '../../shared/components/ui-button/ui-button';
       animation: shimmer 2.4s linear infinite;
     }
     .reveal-pop { animation: scratchReveal .5s cubic-bezier(.17,.89,.32,1.28) both; }
-    @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
-
+    
     /* ── animations ── */
     @keyframes receiptUnroll {
       0%   { max-height:0; clip-path:inset(0 0 100% 0); opacity:0; }

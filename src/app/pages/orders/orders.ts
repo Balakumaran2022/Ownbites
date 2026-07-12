@@ -11,8 +11,6 @@ import { WebSocketService } from '../../services/websocket';
   standalone: true,
   imports: [CommonModule, MatIconModule, RouterLink],
   styles: [`
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
     :host { font-family: 'Inter', sans-serif; }
 
     @keyframes fadeInUp {
