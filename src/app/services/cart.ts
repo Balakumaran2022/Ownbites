@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -13,6 +13,10 @@ export class CartService {
   private cartSubject = new BehaviorSubject<CartItem[]>([]);
   public cart$ = this.cartSubject.asObservable();
 
+  // Selected Coupon state
+  public selectedCoupon = signal<any | null>(null);
+  public discountAmount = signal<number>(0);
+
   // For compatibility with components using signals/methods
   cartItems() {
     return this.cartSubject.value;
@@ -21,7 +25,9 @@ export class CartService {
   cartSummary() {
     const items = this.cartSubject.value;
     const subtotal = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-    const taxes = subtotal * 0.05;
+    const discount = this.discountAmount();
+    const taxableAmount = Math.max(0, subtotal - discount);
+    const taxes = taxableAmount * 0.05;
     const deliveryCharge = 50;
     const itemSavings = items.reduce((sum, item) => {
       if (item.product.originalPrice && item.product.originalPrice > item.product.price) {
@@ -29,7 +35,6 @@ export class CartService {
       }
       return sum;
     }, 0);
-    const discount = 0;
     return {
       subtotal,
       discount,
@@ -37,8 +42,8 @@ export class CartService {
       deliveryCharge,
       packageCharge: 0,
       savedAmount: discount + itemSavings,
-      total: subtotal + taxes + deliveryCharge - discount,
-      grandTotal: subtotal + taxes + deliveryCharge - discount
+      total: Math.max(0, taxableAmount + taxes + deliveryCharge),
+      grandTotal: Math.max(0, taxableAmount + taxes + deliveryCharge)
     };
   }
 
@@ -50,11 +55,20 @@ export class CartService {
     let current = this.cartSubject.value;
     const item = current.find(i => i.product.id === productId);
     if(item) {
+      const oldQty = item.quantity;
       if(quantity <= 0) {
         current = current.filter(i => i.product.id !== productId);
       } else {
         item.quantity = quantity;
       }
+      
+      // If quantity is reduced, reset coupon!
+      if (quantity < oldQty && this.selectedCoupon() !== null) {
+        console.log('[CartService] Item count reduced. Resetting coupon.');
+        this.selectedCoupon.set(null);
+        this.discountAmount.set(0);
+      }
+      
       this.cartSubject.next([...current]);
     }
   }

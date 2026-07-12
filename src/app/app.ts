@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, Router } from '@angular/router';
 import { Header } from './layout/header/header';
@@ -40,7 +40,7 @@ import { MatIconModule } from '@angular/material/icon';
       but we visually hide it until the user completes the flow.
     -->
     <div 
-      class="min-h-screen flex-col bg-background" 
+      class="h-auto min-h-screen flex flex-col bg-background" 
       [style.display]="(!customerService.currentUser() || !orderService.orderType() || (orderService.orderType() === 'Door Delivery' && !addressService.currentAddress()) || (orderService.orderType() !== 'Door Delivery' && !outletService.selectedOutlet())) ? 'none' : 'flex'"
       [class.blur-sm]="showAddressModal() || showMap() || showOutletModal()" 
       [class.pointer-events-none]="showAddressModal() || showMap() || showOutletModal()">
@@ -130,9 +130,10 @@ import { MatIconModule } from '@angular/material/icon';
     <!-- Global Floating Elements -->
     <app-cookie-consent></app-cookie-consent>
 
-    <!-- Sticky View Cart Banner -->
-    <div *ngIf="cartService.cartItems().length > 0 && !router.url.includes('/cart') && !router.url.includes('/checkout')" 
-         class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-3xl z-40 animate-fade-in-up">
+    <!-- Sticky View Cart Banner — sits above cookie consent when both visible -->
+    <div *ngIf="cartService.cartItems().length > 0 && !router.url.includes('/cart') && !router.url.includes('/checkout')"
+         class="fixed left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md animate-fade-in-up"
+         style="bottom:88px; z-index:60;">
       <div class="bg-gradient-to-r from-primary to-orange-600 rounded-2xl shadow-luxury-hover p-4 px-6 flex items-center justify-between cursor-pointer hover:-translate-y-1 transition-all" routerLink="/cart">
         <div class="flex items-center gap-2 text-white">
           <span class="font-extrabold text-lg tracking-tight">{{cartService.cartItems().length}} {{cartService.cartItems().length === 1 ? 'item' : 'items'}} added</span>
@@ -145,7 +146,7 @@ import { MatIconModule } from '@angular/material/icon';
     </div>
   `
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   customerService = inject(CustomerService);
   addressService = inject(AddressService);
   orderService = inject(OrderService);
@@ -156,4 +157,12 @@ export class AppComponent {
   showAddressModal = signal<boolean>(false);
   showOrderTypeModal = signal<boolean>(false);
   showOutletModal = signal<boolean>(false);
+
+  ngOnInit() {
+    // Clear order history for the user (run once on load)
+    if (!localStorage.getItem('ownbites_orders_clear_time')) {
+      localStorage.setItem('ownbites_orders_clear_time', Date.now().toString());
+      localStorage.removeItem('ownbites_recent_orders');
+    }
+  }
 }

@@ -17,186 +17,174 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterLink, MatIconModule, SkeletonLoader, UiCard],
   template: `
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-6">
       <!-- Hero Banner -->
-      <section class="relative rounded-3xl overflow-hidden h-64 md:h-96 shadow-luxury group">
+      <section class="relative rounded-2xl overflow-hidden h-64 md:h-80 shadow-luxury group">
         <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&auto=format&fit=crop&q=80" alt="Delicious Food" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-        <div class="absolute inset-0 bg-black/30 bg-gradient-to-t from-[#1A1A1A]/95 via-[#1A1A1A]/60 to-transparent flex flex-col justify-end p-8 md:p-12">
-          <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-4 drop-shadow-md tracking-tight">Craving Something <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">Special?</span></h1>
-          <p class="text-lg md:text-xl text-gray-200 mb-8 max-w-xl font-medium drop-shadow-md">Experience culinary excellence delivered straight to your door.</p>
-          <div class="flex flex-col sm:flex-row gap-4 max-w-2xl mt-4 w-full">
-            <div class="relative flex-1">
-              <input #searchInput (keyup.enter)="onSearch(searchInput.value)" type="text" placeholder="Search for luxury dining or dishes..." class="w-full bg-white/95 backdrop-blur-xl border-none rounded-2xl pl-14 pr-6 py-5 focus:ring-4 focus:ring-primary/30 focus:bg-white transition-all shadow-luxury text-gray-900 text-lg placeholder-gray-400">
-              <mat-icon class="absolute left-5 top-1/2 -translate-y-1/2 text-primary text-3xl">search</mat-icon>
+        <div class="absolute inset-0 bg-black/40 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-6 md:p-8">
+          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-2 drop-shadow-md tracking-tight leading-tight">
+            Craving Something <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#f4811f] font-extrabold">Special?</span>
+          </h1>
+          <div class="max-w-xl w-full mt-4">
+            <div class="flex items-center bg-white/95 backdrop-blur-md rounded-full p-1.5 shadow-luxury-hover border border-white/20 focus-within:ring-4 focus-within:ring-[#f4811f]/20 transition-all duration-300">
+              <div class="flex-1 flex items-center pl-4 gap-2.5">
+                <mat-icon class="text-[#f4811f]" style="font-size:20px;width:20px;height:20px;">search</mat-icon>
+                <input #searchInput (keyup.enter)="onSearch(searchInput.value)" 
+                       type="text" 
+                       placeholder="Search for delicious food..." 
+                       class="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-gray-800 placeholder-gray-400 text-sm font-semibold">
+              </div>
+              <button (click)="onSearch(searchInput.value)" 
+                      class="bg-gradient-to-r from-[#f4811f] to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-wider shadow transition-all duration-200 hover:scale-102 active:scale-98 flex items-center gap-1.5">
+                <span>Search</span>
+                <mat-icon style="font-size:14px;width:14px;height:14px;">arrow_forward</mat-icon>
+              </button>
             </div>
-            <button (click)="onSearch(searchInput.value)" class="bg-[#f4811f] hover:bg-orange-600 shrink-0 text-white px-10 py-5 rounded-2xl font-bold whitespace-nowrap shadow-luxury transition-all hover:shadow-luxury-hover hover:-translate-y-1 flex items-center justify-center tracking-wide uppercase text-sm">
-              Explore
-            </button>
           </div>
         </div>
       </section>
 
-      <!-- Quick Categories -->
+      <!-- Quick Categories — Slim Circles -->
       <section *ngIf="categories().length > 0 || loadingCategories()">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-bold text-secondary">What's on your mind?</h2>
+        <div class="flex flex-col mb-4">
+          <h2 class="text-2xl md:text-3xl font-black text-secondary tracking-tight">
+            What's on your <span class="text-primary relative inline-block">mind?</span>
+          </h2>
+          <div class="w-16 h-1 bg-gradient-to-r from-primary to-[#f4811f] rounded-full mt-2"></div>
         </div>
         
-        <div class="relative w-full overflow-x-auto hide-scrollbar pb-6 pt-2 snap-x">
+        <div class="relative w-full overflow-x-auto hide-scrollbar pb-2 pt-1 snap-x">
           <ng-container *ngIf="loadingCategories(); else cats">
-            <div class="flex gap-8 w-max">
-              <div *ngFor="let i of [1,2,3,4,5,6]" class="flex flex-col items-center gap-4 min-w-[100px] shrink-0">
-                <app-skeleton-loader type="circle" widthClass="w-28" heightClass="h-28"></app-skeleton-loader>
-                <app-skeleton-loader widthClass="w-20" heightClass="h-4"></app-skeleton-loader>
+            <div class="flex gap-6 w-max">
+              <div *ngFor="let i of [1,2,3,4,5,6]" class="flex flex-col items-center gap-2 min-w-[96px] shrink-0">
+                <app-skeleton-loader type="circle" widthClass="w-24" heightClass="h-24"></app-skeleton-loader>
+                <app-skeleton-loader widthClass="w-20" heightClass="h-3"></app-skeleton-loader>
               </div>
             </div>
           </ng-container>
           <ng-template #cats>
-            <div class="flex gap-8 w-max">
-              <div *ngFor="let cat of categories()" class="flex flex-col items-center gap-4 min-w-[100px] cursor-pointer group shrink-0 snap-start" (click)="goToCategory(cat.id)">
-                <div class="w-28 h-28 rounded-full overflow-hidden shadow-luxury group-hover:shadow-luxury-hover transition-all duration-500 group-hover:-translate-y-2 relative">
+            <div class="flex gap-6 w-max">
+              <div *ngFor="let cat of categories(); let i = index" class="flex flex-col items-center gap-2 min-w-[96px] cursor-pointer group shrink-0 snap-start" (click)="goToCategory(cat.id, i)">
+                <div class="w-24 h-24 rounded-full overflow-hidden shadow hover:shadow-md transition-all duration-500 group-hover:-translate-y-1 relative">
                   <img [src]="cat.imageUrl" [alt]="cat.name" class="w-full h-full object-cover" />
                   <div class="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors"></div>
                 </div>
-                <span class="font-bold text-gray-700 group-hover:text-primary transition-colors text-center px-1 w-32 tracking-wide text-sm leading-snug">{{cat.name}}</span>
+                <span class="font-bold text-gray-700 group-hover:text-primary transition-colors text-center px-0.5 w-28 tracking-wide text-xs truncate leading-snug">{{cat.name}}</span>
               </div>
             </div>
           </ng-template>
         </div>
       </section>
 
-      <!-- Filters and View Toggles -->
-      <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pt-4 border-t border-gray-100">
-        <!-- Left Side: Veg/Non-Veg Toggles -->
-        <div class="flex items-center gap-3">
-          <button (click)="filterState.set(filterState() === 'veg' ? 'all' : 'veg')" 
-                  [class]="filterState() === 'veg' ? 'bg-orange-50 border-orange-500 shadow-md' : 'bg-white border-gray-200 shadow-sm'"
-                  class="flex items-center gap-2 px-4 py-2 rounded-full border transition-all cursor-pointer hover:shadow-md">
-            <div class="w-4 h-4 border-2 border-green-600 flex items-center justify-center bg-white rounded-sm"><div class="w-2 h-2 rounded-full bg-green-600"></div></div>
-            <span class="text-sm font-bold" [class.text-gray-800]="filterState() !== 'veg'" [class.text-orange-700]="filterState() === 'veg'">Veg</span>
-          </button>
-          <button (click)="filterState.set(filterState() === 'non-veg' ? 'all' : 'non-veg')"
-                  [class]="filterState() === 'non-veg' ? 'bg-orange-50 border-orange-500 shadow-md' : 'bg-white border-gray-200 shadow-sm'"
-                  class="flex items-center gap-2 px-4 py-2 rounded-full border transition-all cursor-pointer hover:shadow-md">
-            <div class="w-4 h-4 border-2 border-red-600 flex items-center justify-center bg-white rounded-sm"><div class="w-2 h-2 rounded-full bg-red-600"></div></div>
-            <span class="text-sm font-bold" [class.text-gray-800]="filterState() !== 'non-veg'" [class.text-orange-700]="filterState() === 'non-veg'">Non-Veg</span>
-          </button>
-        </div>
+      <!-- Professional Filter Bar (Static) -->
+      <div class="py-3 mb-4 border-b border-gray-100/60">
+        <div class="flex items-center gap-2">
 
-        <!-- Right Side: Sort & View Modes -->
-        <div class="flex items-center gap-2 bg-white rounded-2xl p-1 shadow-sm border border-gray-100">
-          <button (click)="togglePriceSort()" [class.bg-orange-50]="priceSort() !== 'none'" [class.text-primary]="priceSort() !== 'none'" class="px-4 py-2 rounded-xl hover:bg-orange-50 text-gray-500 transition-colors flex items-center gap-1 font-bold text-sm" title="Sort by Price">
-            <mat-icon class="text-[20px] w-5 h-5">sort</mat-icon>
-            <span>{{priceSort() === 'asc' ? 'Price: Low to High' : priceSort() === 'desc' ? 'Price: High to Low' : 'Sort by Price'}}</span>
+          <!-- Veg Filter Pill -->
+          <button (click)="filterState.set(filterState() === 'veg' ? 'all' : 'veg')"
+                  [class]="filterState() === 'veg'
+                    ? 'bg-green-600 text-white border-green-600 shadow-md'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-green-400 hover:text-green-700'"
+                  class="flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap">
+            <div [class]="filterState() === 'veg'
+                  ? 'w-3.5 h-3.5 border-2 border-white flex items-center justify-center rounded-sm'
+                  : 'w-3.5 h-3.5 border-2 border-green-600 flex items-center justify-center rounded-sm'">
+              <div [class]="filterState() === 'veg' ? 'w-1.5 h-1.5 rounded-full bg-white' : 'w-1.5 h-1.5 rounded-full bg-green-600'"></div>
+            </div>
+            Veg
           </button>
-          <div class="w-px h-6 bg-gray-200 mx-1"></div>
-          <button (click)="viewMode.set('grid')" [class.bg-orange-50]="viewMode() === 'grid'" [class.text-primary]="viewMode() === 'grid'" class="p-2.5 rounded-xl hover:bg-orange-50 text-gray-400 transition-colors">
-            <mat-icon>grid_view</mat-icon>
+
+          <!-- Non-Veg Filter Pill -->
+          <button (click)="filterState.set(filterState() === 'non-veg' ? 'all' : 'non-veg')"
+                  [class]="filterState() === 'non-veg'
+                    ? 'bg-red-600 text-white border-red-600 shadow-md'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-red-400 hover:text-red-700'"
+                  class="flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap">
+            <div [class]="filterState() === 'non-veg'
+                  ? 'w-3.5 h-3.5 border-2 border-white flex items-center justify-center rounded-sm'
+                  : 'w-3.5 h-3.5 border-2 border-red-600 flex items-center justify-center rounded-sm'">
+              <div [class]="filterState() === 'non-veg' ? 'w-1.5 h-1.5 rounded-full bg-white' : 'w-1.5 h-1.5 rounded-full bg-red-600'"></div>
+            </div>
+            Non-Veg
           </button>
-          <button (click)="viewMode.set('list')" [class.bg-orange-50]="viewMode() === 'list'" [class.text-primary]="viewMode() === 'list'" class="p-2.5 rounded-xl hover:bg-orange-50 text-gray-400 transition-colors">
-            <mat-icon>view_list</mat-icon>
+
+          <!-- Divider -->
+          <div class="flex-1"></div>
+
+          <!-- Sort Pill -->
+          <button (click)="togglePriceSort()"
+                  [class]="priceSort() !== 'none'
+                    ? 'bg-orange-500 text-white border-orange-500 shadow-md'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-orange-400 hover:text-orange-600'"
+                  class="flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap">
+            <mat-icon class="text-[16px] w-4 h-4">sort</mat-icon>
+            <span>{{priceSort() === 'asc' ? 'Price ↑' : priceSort() === 'desc' ? 'Price ↓' : 'Sort'}}</span>
           </button>
+
         </div>
       </div>
 
-      <!-- Menu Accordion -->
-      <div class="space-y-4">
+      <!-- Category Cards Grid — 3 per row -->
+      <div>
+        <!-- Skeleton -->
         <ng-container *ngIf="loadingMenu()">
-           <app-skeleton-loader widthClass="w-full" heightClass="h-20" *ngFor="let i of [1,2,3,4,5]"></app-skeleton-loader>
-        </ng-container>
-        
-        <div *ngFor="let group of filteredMenuGroups()" [id]="'category-' + group.category.id" class="bg-white rounded-3xl shadow-luxury border-none overflow-hidden transition-all duration-300 mb-6">
-          
-          <div (click)="toggleCategory(group.category.id)" class="p-8 flex items-center justify-between cursor-pointer hover:bg-[#FAF9F6] transition-colors">
-            <h3 class="text-2xl font-extrabold text-secondary tracking-tight">{{group.category.name}} <span class="text-gray-400 font-medium text-lg ml-2">({{group.items.length}})</span></h3>
-            <div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-primary transition-transform duration-500" [class.rotate-180]="isExpanded(group.category.id)">
-              <mat-icon>expand_more</mat-icon>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div *ngFor="let i of [1,2,3,4,5,6]">
+              <app-skeleton-loader widthClass="w-full" heightClass="h-56"></app-skeleton-loader>
             </div>
           </div>
-          
-          <div *ngIf="isExpanded(group.category.id)" class="px-6 pb-6 space-y-6">
-             <div class="w-full h-px bg-gray-100 mb-6"></div>
-             
-             <!-- Items Container -->
-             <div [class]="viewMode() === 'list' ? 'space-y-0' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'">
-               
-               <!-- List View -->
-               <ng-container *ngIf="viewMode() === 'list'">
-                 <div *ngFor="let item of group.items" class="flex items-start justify-between gap-8 py-6 border-b border-gray-100/50 last:border-0 group">
-                   <div class="flex-1 pr-4">
-                     <div class="flex items-center gap-2 mb-3">
-                       <div [class]="item.isVeg ? 'w-4 h-4 border-2 border-green-600 flex items-center justify-center rounded-sm shadow-sm' : 'w-4 h-4 border-2 border-red-600 flex items-center justify-center rounded-sm shadow-sm'">
-                         <div [class]="item.isVeg ? 'w-1.5 h-1.5 rounded-full bg-green-600' : 'w-1.5 h-1.5 rounded-full bg-red-600'"></div>
-                       </div>
-                     </div>
-                     <h4 class="text-xl font-bold text-secondary tracking-tight">{{item.name}}</h4>
-                     <div class="flex items-center gap-3 mt-2">
-                       <span class="font-extrabold text-xl text-primary">₹{{item.price}}</span>
-                       <span *ngIf="item.originalPrice" class="text-sm text-gray-400 line-through font-medium">₹{{item.originalPrice}}</span>
-                     </div>
-                     <p class="text-gray-500 mt-4 line-clamp-2 leading-relaxed font-medium">{{item.description}}</p>
-                   </div>
-                   
-                   <div class="relative shrink-0 w-44 h-44">
-                     <div class="w-full h-full rounded-2xl overflow-hidden bg-[#FAF9F6] shadow-luxury border-none">
-                       <img *ngIf="item.imageUrl" [src]="item.imageUrl" [alt]="item.name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                     </div>
-                     <ng-container *ngIf="getCartQuantity(item.id) === 0; else qtyControlList">
-                       <button (click)="cartService.addToCart(item); $event.stopPropagation()" class="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-orange-600 text-white font-extrabold px-10 py-3 rounded-full shadow-luxury-hover hover:shadow-lg transition-all hover:-translate-y-1 uppercase text-sm tracking-widest">
-                         ADD
-                       </button>
-                     </ng-container>
-                     <ng-template #qtyControlList>
-                       <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-white border-2 border-orange-100 flex items-center justify-between rounded-full shadow-luxury-hover overflow-hidden" style="width: 110px;" (click)="$event.stopPropagation()">
-                         <button (click)="decrementQuantity(item.id, $event)" class="w-10 h-10 flex items-center justify-center text-orange-600 hover:bg-orange-50 transition-colors font-extrabold text-xl">-</button>
-                         <span class="font-extrabold text-secondary text-lg">{{getCartQuantity(item.id)}}</span>
-                         <button (click)="incrementQuantity(item.id, $event)" class="w-10 h-10 flex items-center justify-center text-orange-600 hover:bg-orange-50 transition-colors font-extrabold text-xl">+</button>
-                       </div>
-                     </ng-template>
-                   </div>
-                 </div>
-               </ng-container>
+        </ng-container>
 
-               <!-- Grid View -->
-               <ng-container *ngIf="viewMode() === 'grid'">
-                 <div *ngFor="let item of group.items" class="bg-[#FAF9F6] border-none rounded-3xl p-5 flex flex-col gap-4 group shadow-luxury hover:shadow-luxury-hover hover:-translate-y-1 transition-all relative">
-                   <div class="w-full h-56 rounded-2xl overflow-hidden bg-white relative shadow-sm">
-                     <img *ngIf="item.imageUrl" [src]="item.imageUrl" [alt]="item.name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                     <div class="absolute top-3 left-3">
-                       <div [class]="item.isVeg ? 'w-6 h-6 bg-white/90 backdrop-blur rounded-md shadow-sm border-2 border-green-600 flex items-center justify-center' : 'w-6 h-6 bg-white/90 backdrop-blur rounded-md shadow-sm border-2 border-red-600 flex items-center justify-center'">
-                         <div [class]="item.isVeg ? 'w-3 h-3 rounded-full bg-green-600' : 'w-3 h-3 rounded-full bg-red-600'"></div>
-                       </div>
-                     </div>
+        <ng-container *ngIf="!loadingMenu()">
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            <div *ngFor="let group of filteredMenuGroups(); let idx = index"
+                 class="rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group/cat select-none hover:-translate-y-1"
+                 (click)="goToCategoryPage(group.category.id, idx)">
+
+              <!-- Image + Overlay -->
+              <div class="relative w-full h-56 md:h-64 overflow-hidden bg-gray-900">
+                <img [src]="group.category.imageUrl || group.items[0]?.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop&q=80'"
+                     [alt]="group.category.name"
+                     class="w-full h-full object-cover group-hover/cat:scale-105 transition-transform duration-700 opacity-85" />
+                <!-- Gradient -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
+                  
+                 <!-- Item count badge top-left -->
+                 <div class="absolute top-2 left-2">
+                   <span class="bg-[#f4811f] text-white text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wide shadow">
+                     {{group.items.length}} items
+                   </span>
+                 </div>
+
+                 <!-- Arrow icon top-right -->
+                 <div class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
+                   <mat-icon class="text-white" style="font-size:16px;width:16px;height:16px;">arrow_forward</mat-icon>
+                 </div>
+
+                 <!-- Category name + veg counts + offer text at bottom -->
+                 <div class="absolute bottom-0 left-0 right-0 px-3 pb-3 pt-8">
+                   <!-- Swiggy style: bold orange offer text directly above category name, no white background -->
+                   <div class="text-[#f4811f] font-black text-sm uppercase tracking-wide drop-shadow mb-0.5">
+                     {{getOfferText(idx)}}
                    </div>
-                   <div class="flex-1 flex flex-col pt-2">
-                     <h4 class="text-xl font-bold text-secondary line-clamp-1 tracking-tight">{{item.name}}</h4>
-                     <p class="text-gray-500 mt-2 line-clamp-2 min-h-[44px] flex-grow font-medium leading-relaxed">{{item.description}}</p>
-                     <div class="flex items-center justify-between mt-6">
-                       <div class="flex flex-col">
-                         <span class="font-extrabold text-2xl text-primary">₹{{item.price}}</span>
-                         <span *ngIf="item.originalPrice" class="text-sm text-gray-400 line-through font-medium mt-1">₹{{item.originalPrice}}</span>
-                       </div>
-                       <ng-container *ngIf="getCartQuantity(item.id) === 0; else qtyControlGrid">
-                         <button (click)="cartService.addToCart(item); $event.stopPropagation()" class="bg-gradient-to-r from-primary to-orange-600 text-white font-extrabold px-8 py-3.5 rounded-full shadow-md hover:shadow-lg transition-all hover:-translate-y-1 uppercase text-sm tracking-widest">
-                           ADD
-                         </button>
-                       </ng-container>
-                       <ng-template #qtyControlGrid>
-                         <div class="bg-white border-2 border-orange-100 flex items-center justify-between rounded-full shadow-md overflow-hidden h-[48px]" style="width: 100px;" (click)="$event.stopPropagation()">
-                           <button (click)="decrementQuantity(item.id, $event)" class="flex-1 h-full flex items-center justify-center text-orange-600 hover:bg-orange-50 transition-colors font-extrabold text-xl">-</button>
-                           <span class="font-extrabold text-secondary text-lg">{{getCartQuantity(item.id)}}</span>
-                           <button (click)="incrementQuantity(item.id, $event)" class="flex-1 h-full flex items-center justify-center text-orange-600 hover:bg-orange-50 transition-colors font-extrabold text-xl">+</button>
-                         </div>
-                       </ng-template>
-                     </div>
+                   <h3 class="text-white font-extrabold text-base leading-snug drop-shadow-md">
+                     {{group.category.name}}
+                   </h3>
+                   <div class="flex items-center gap-2 mt-1">
+                     <span class="flex items-center gap-1 text-xs text-white/80">
+                       <span class="w-1.5 h-1.5 rounded-sm bg-green-400 inline-block"></span>{{countVeg(group.items)}} Veg
+                     </span>
+                     <span class="flex items-center gap-1 text-xs text-white/80">
+                       <span class="w-1.5 h-1.5 rounded-sm bg-red-400 inline-block"></span>{{countNonVeg(group.items)}} Non-veg
+                     </span>
                    </div>
                  </div>
-               </ng-container>
-               
-             </div>
-             
+                </div>
+              </div>
+
+            </div>
           </div>
-        </div>
+        </ng-container>
       </div>
     </div>
 
@@ -248,29 +236,73 @@ import { Router } from '@angular/router';
         </div>
       </section>
 
-      <!-- Floating Menu Button -->
-      <button *ngIf="filteredMenuGroups().length > 0" (click)="showMenuSheet.set(true)" 
-              class="fixed bottom-28 right-6 z-30 bg-gradient-to-r from-primary to-orange-600 text-white shadow-luxury-hover hover:shadow-lg transition-all hover:-translate-y-1 rounded-full px-6 py-4 flex items-center gap-2 font-extrabold tracking-widest text-sm uppercase">
+      <!-- Floating Menu Button — right-edge vertical tab -->
+      <button *ngIf="filteredMenuGroups().length > 0" (click)="showMenuSheet.set(true)"
+              class="fixed top-1/2 -translate-y-1/2 right-0 z-30
+                     bg-gradient-to-b from-primary to-orange-600
+                     text-white shadow-luxury-hover hover:shadow-lg
+                     transition-all hover:-translate-x-1
+                     rounded-l-2xl px-2.5 py-6
+                     flex flex-col items-center gap-2
+                     font-extrabold tracking-widest text-[11px] uppercase">
         <mat-icon style="font-size: 20px; width: 20px; height: 20px;">restaurant_menu</mat-icon>
-        MENU
+        <span style="writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: 0.14em;">MENU</span>
       </button>
 
-      <!-- Menu Categories Sheet/Modal -->
+      <!-- Menu Sheet/Drawer — shows categories + their items -->
       <ng-container *ngIf="showMenuSheet()">
-        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4" (click)="showMenuSheet.set(false)">
-          <div class="bg-white w-full sm:w-[400px] rounded-t-[2rem] sm:rounded-3xl shadow-2xl animate-fade-in-up max-h-[70vh] flex flex-col" (click)="$event.stopPropagation()">
-            <div class="p-6 border-b border-gray-100 flex items-center justify-between shrink-0">
-              <h3 class="text-xl font-bold text-secondary tracking-tight">Browse Menu</h3>
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-end sm:items-start sm:justify-end" (click)="showMenuSheet.set(false)">
+          <div class="bg-white w-full sm:w-[400px] sm:h-full rounded-t-[2rem] sm:rounded-none sm:rounded-l-3xl shadow-2xl animate-fade-in-up max-h-[90vh] sm:max-h-full flex flex-col" (click)="$event.stopPropagation()">
+            
+            <!-- Drawer Header -->
+            <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between shrink-0 bg-gradient-to-r from-orange-50 to-white">
+              <div class="flex items-center gap-3">
+                <mat-icon class="text-primary text-2xl">restaurant_menu</mat-icon>
+                <h3 class="text-xl font-extrabold text-secondary tracking-tight">Full Menu</h3>
+              </div>
               <button (click)="showMenuSheet.set(false)" class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors">
                 <mat-icon>close</mat-icon>
               </button>
             </div>
-            <div class="overflow-y-auto custom-scrollbar p-2">
-              <button *ngFor="let group of filteredMenuGroups()" (click)="scrollToCategory(group.category.id)" class="w-full text-left px-6 py-4 hover:bg-orange-50 transition-colors border-b border-gray-50 last:border-0 flex items-center justify-between group rounded-xl">
-                <span class="font-bold text-gray-700 group-hover:text-primary transition-colors">{{group.category.name}}</span>
-                <span class="text-sm font-extrabold text-gray-400">{{group.items.length}}</span>
-              </button>
+
+            <!-- Accordion Categories with Items -->
+            <div class="overflow-y-auto custom-scrollbar flex-1">
+              <div *ngFor="let group of filteredMenuGroups()" class="border-b border-gray-100 last:border-0">
+                
+                <!-- Category Header (closed by default, click to expand) -->
+                <button (click)="toggleMenuSheetCategory(group.category.id)"
+                        class="w-full flex items-center justify-between px-6 py-4 hover:bg-orange-50 transition-colors group">
+                  <div class="flex items-center gap-3">
+                    <span class="font-extrabold text-secondary text-base group-hover:text-primary transition-colors">{{group.category.name}}</span>
+                    <span class="text-xs bg-orange-100 text-orange-600 font-bold px-2.5 py-0.5 rounded-full">{{group.items.length}}</span>
+                  </div>
+                  <mat-icon class="text-gray-400 transition-transform duration-300"
+                            [class.rotate-180]="isMenuSheetCatExpanded(group.category.id)">
+                    expand_more
+                  </mat-icon>
+                </button>
+
+                <!-- Items List (hidden until header clicked) -->
+                <div *ngIf="isMenuSheetCatExpanded(group.category.id)" class="bg-gray-50/70 pb-2">
+                  <div *ngFor="let item of group.items"
+                       (click)="scrollToCategory(group.category.id)"
+                       class="flex items-center justify-between px-6 py-3 hover:bg-orange-50 cursor-pointer transition-colors group/item border-t border-gray-100">
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                      <!-- Veg / Non-veg indicator -->
+                      <div [class]="item.isVeg
+                            ? 'w-4 h-4 border-2 border-green-600 flex items-center justify-center rounded-sm shrink-0'
+                            : 'w-4 h-4 border-2 border-red-600 flex items-center justify-center rounded-sm shrink-0'">
+                        <div [class]="item.isVeg ? 'w-2 h-2 rounded-full bg-green-600' : 'w-2 h-2 rounded-full bg-red-600'"></div>
+                      </div>
+                      <span class="text-[15px] text-gray-700 group-hover/item:text-primary transition-colors font-medium truncate">{{item.name}}</span>
+                    </div>
+                    <span class="text-[15px] font-extrabold text-primary shrink-0 ml-3">₹{{item.price}}</span>
+                  </div>
+                </div>
+
+              </div>
             </div>
+
           </div>
         </div>
       </ng-container>
@@ -309,27 +341,15 @@ export class Home implements OnInit {
   loadingMenu = signal(true);
   pauseTestimonials = false;
   
-  viewMode = signal<'list' | 'grid'>('list');
+  viewMode = signal<'list' | 'grid'>('grid');
   filterState = signal<'all' | 'veg' | 'non-veg'>('all');
   priceSort = signal<'none' | 'asc' | 'desc'>('none');
   expandedCategories = signal<Set<string>>(new Set());
+  menuSheetExpandedCategories = signal<Set<string>>(new Set());
 
   filteredMenuGroups = computed(() => {
-    const state = this.filterState();
     const sort = this.priceSort();
-    
     let groups = this.menuGroups();
-    
-    if (state !== 'all') {
-      groups = groups.map(group => ({
-        ...group,
-        items: group.items.filter(item => {
-          if (state === 'veg') return item.isVeg;
-          if (state === 'non-veg') return item.isNonVeg;
-          return true;
-        })
-      })).filter(group => group.items.length > 0);
-    }
     
     if (sort !== 'none') {
       let allItems: Product[] = [];
@@ -403,12 +423,9 @@ export class Home implements OnInit {
       next: (groups) => {
         this.menuGroups.set(groups || []);
         this.loadingMenu.set(false);
-        // Auto expand all categories
-        if (groups && groups.length > 0) {
-          const expanded = new Set<string>();
-          groups.forEach((g: any) => expanded.add(g.category.id));
-          this.expandedCategories.set(expanded);
-        }
+        // Both main cards and sheet drawer start COLLAPSED — user clicks to open
+        this.expandedCategories.set(new Set<string>());
+        this.menuSheetExpandedCategories.set(new Set<string>());
       },
       error: (err) => {
         console.error('Error fetching menu:', err);
@@ -432,8 +449,30 @@ export class Home implements OnInit {
     this.expandedCategories.set(current);
   }
 
-  goToCategory(categoryId: string) {
-    this.router.navigate(['/products'], { queryParams: { category: categoryId } });
+  toggleMenuSheetCategory(categoryId: string) {
+    const current = new Set(this.menuSheetExpandedCategories());
+    if (current.has(categoryId)) {
+      current.delete(categoryId);
+    } else {
+      current.add(categoryId);
+    }
+    this.menuSheetExpandedCategories.set(current);
+  }
+
+  isMenuSheetCatExpanded(categoryId: string): boolean {
+    return this.menuSheetExpandedCategories().has(categoryId);
+  }
+
+  goToCategory(categoryId: string, index: number) {
+    const offer = this.getOfferText(index);
+    const diet = this.filterState();
+    this.router.navigate(['/products'], { queryParams: { category: categoryId, offer: offer, diet: diet } });
+  }
+
+  goToCategoryPage(categoryId: string, index: number) {
+    const offer = this.getOfferText(index);
+    const diet = this.filterState();
+    this.router.navigate(['/products'], { queryParams: { category: categoryId, offer: offer, diet: diet } });
   }
 
   onSearch(query: string) {
@@ -487,6 +526,23 @@ export class Home implements OnInit {
     event.stopPropagation();
     const qty = this.getCartQuantity(productId);
     this.cartService.updateQuantity(productId, qty - 1);
+  }
+
+  countVeg(items: any[]): number {
+    return items.filter(i => i.isVeg).length;
+  }
+
+  countNonVeg(items: any[]): number {
+    return items.filter(i => i.isNonVeg || !i.isVeg).length;
+  }
+
+  getOfferText(index: number): string {
+    const offers = [
+      '₹80 OFF ABOVE ₹300',
+      '₹100 OFF ABOVE ₹500',
+      '₹200 OFF ABOVE ₹1500'
+    ];
+    return offers[index % offers.length];
   }
 
 }

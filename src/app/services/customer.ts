@@ -42,9 +42,12 @@ export class CustomerService {
     }).pipe(
       map(res => {
         if (res.status === 'success' && res.data) {
+          const rawName = res.data.customer?.name || '';
+          // Backend sometimes returns the phone number as name — detect and ignore it
+          const isPhoneAsName = /^\d{7,}$/.test(rawName.replace(/\s/g, ''));
           const user: User = {
             id: res.data.customer?._id || '',
-            name: res.data.customer?.name || 'Guest',
+            name: (rawName && !isPhoneAsName) ? rawName : 'Guest',
             phone: res.data.customer?.phone || formattedPhone,
             email: res.data.customer?.email || ''
           };

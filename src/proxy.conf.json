@@ -1,13 +1,15 @@
 [
   {
     "context": [
-      "/customer",
-      "/category",
-      "/product",
-      "/cart",
-      "/order",
-      "/outlet",
-      "/item"
+      "/customer/",
+      "/category/",
+      "/product/",
+      "/cart/",
+      "/order/",
+      "/outlet/",
+      "/item/",
+      "/organization/",
+      "/banner/"
     ],
     "target": "https://backend2.owct.me",
     "secure": false,

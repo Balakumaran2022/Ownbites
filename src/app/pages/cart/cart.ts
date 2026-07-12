@@ -1,9 +1,12 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CartService } from '../../services/cart';
 import { DiscountService } from '../../services/discount';
+import { OrderService } from '../../services/order';
+import { CustomerService } from '../../services/customer';
 import { UiButton } from '../../shared/components/ui-button/ui-button';
 import { UiCard } from '../../shared/components/ui-card/ui-card';
 import { CartItem } from '../../models';
@@ -11,49 +14,65 @@ import { CartItem } from '../../models';
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule, UiButton, UiCard],
+  imports: [CommonModule, RouterLink, FormsModule, MatIconModule, UiButton, UiCard],
   template: `
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[60vh]">
-      <h1 class="text-3xl font-bold text-secondary mb-8">Your Cart</h1>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-32 min-h-[60vh]">
+      <h1 class="text-3xl font-extrabold text-secondary mb-8">Your Cart</h1>
       
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start" *ngIf="cartService.cartItems().length > 0; else emptyCart">
         
         <!-- Left Column: Cart Items + Extra Options -->
         <div class="lg:col-span-2 space-y-6">
+
+          <!-- First User Welcome Promo Banner (Left Column) -->
+          <div *ngIf="isFirstUser() && cartService.selectedCoupon()?.code !== 'WELCOME50'"
+               class="bg-gradient-to-r from-orange-500 to-[#f4811f] text-white p-5 rounded-3xl shadow-luxury-hover border border-orange-100/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in">
+            <div class="flex items-start gap-3">
+              <mat-icon class="text-white text-3xl">celebration</mat-icon>
+              <div>
+                <h3 class="font-extrabold text-base sm:text-lg">Welcome to OwnBites! 🎉</h3>
+                <p class="text-white/95 text-xs sm:text-sm mt-0.5 font-medium leading-relaxed">
+                  As a first-time user, you get a special flat 50% discount (up to ₹150) on this order!
+                </p>
+              </div>
+            </div>
+            <button (click)="applyCoupon(coupons[0])"
+                    class="bg-white text-orange-600 hover:bg-orange-50 font-black px-6 py-2.5 rounded-full text-xs uppercase tracking-wider shadow transition-all hover:scale-105 active:scale-95 shrink-0 self-start sm:self-center">
+              Apply 50% Coupon
+            </button>
+          </div>
           
           <!-- Cart Items List -->
           <div class="space-y-4">
-            <app-ui-card *ngFor="let item of cartService.cartItems()" [padding]="true">
-            <div class="flex flex-col sm:flex-row items-center gap-4 w-full">
-              <div class="w-24 h-24 rounded-lg overflow-hidden shrink-0">
-                <img [src]="item.product.imageUrl" [alt]="item.product.name" class="w-full h-full object-cover">
-              </div>
-              
-              <div class="flex-1 flex flex-col sm:flex-row sm:items-center justify-between w-full">
-                <div class="mb-4 sm:mb-0">
-                  <h3 class="font-bold text-secondary">{{item.product.name}}</h3>
-                  <p class="text-sm text-gray-500 line-clamp-1">{{item.product.description}}</p>
-                  <div class="font-bold text-secondary mt-1">₹{{item.product.price}}</div>
+            <app-ui-card *ngFor="let item of cartService.cartItems()" [padding]="true" class="block">
+              <div class="flex flex-col sm:flex-row items-center gap-4 w-full">
+                <div class="w-24 h-24 rounded-lg overflow-hidden shrink-0 bg-gray-50 border border-gray-100 flex items-center justify-center">
+                  <img [src]="item.product.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80'" [alt]="item.product.name" class="w-full h-full object-cover">
                 </div>
                 
-                <div class="flex items-center gap-3 bg-gray-50 p-1 rounded-lg border border-gray-200">
-                  <button (click)="decreaseQuantity(item)" class="w-8 h-8 flex items-center justify-center text-primary hover:bg-orange-100 rounded-md transition-colors">
-                    <mat-icon class="text-sm">remove</mat-icon>
-                  </button>
-                  <span class="font-bold text-secondary w-4 text-center">{{item.quantity}}</span>
-                  <button (click)="increaseQuantity(item)" class="w-8 h-8 flex items-center justify-center text-primary hover:bg-orange-100 rounded-md transition-colors">
-                    <mat-icon class="text-sm">add</mat-icon>
-                  </button>
+                <div class="flex-1 flex flex-col sm:flex-row sm:items-center justify-between w-full">
+                  <div class="mb-4 sm:mb-0">
+                    <h3 class="font-extrabold text-secondary text-base">{{item.product.name}}</h3>
+                    <p class="text-sm text-gray-500 line-clamp-1 mt-0.5">{{item.product.description}}</p>
+                    <div class="font-extrabold text-secondary mt-1">₹{{item.product.price}}</div>
+                  </div>
+                  
+                  <div class="flex items-center gap-3 bg-gray-50 p-1 rounded-lg border border-gray-200">
+                    <button (click)="decreaseQuantity(item)" class="w-8 h-8 flex items-center justify-center text-primary hover:bg-orange-100 rounded-md transition-colors">
+                      <mat-icon class="text-sm">remove</mat-icon>
+                    </button>
+                    <span class="font-extrabold text-secondary w-4 text-center">{{item.quantity}}</span>
+                    <button (click)="increaseQuantity(item)" class="w-8 h-8 flex items-center justify-center text-primary hover:bg-orange-100 rounded-md transition-colors">
+                      <mat-icon class="text-sm">add</mat-icon>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
             </app-ui-card>
           </div>
 
-          <!-- Extra Options -->
-          <div class="space-y-4">
-            <!-- Suggestions -->
-          <app-ui-card [padding]="true">
+          <!-- Suggestions -->
+          <app-ui-card [padding]="true" class="block">
             <div class="flex items-start gap-3 w-full">
               <mat-icon class="text-gray-400 mt-1" style="transform: scaleX(-1);">format_quote</mat-icon>
               <textarea placeholder="Any suggestions? We will pass it on..." class="w-full bg-transparent border-none focus:ring-0 resize-none h-8 text-gray-700 placeholder-gray-400 outline-none"></textarea>
@@ -61,67 +80,157 @@ import { CartItem } from '../../models';
           </app-ui-card>
 
           <!-- No Contact Delivery -->
-          <div class="bg-white rounded-3xl p-4 shadow-luxury flex items-start gap-4 cursor-pointer hover:bg-gray-50 transition-colors" (click)="optInNoContact = !optInNoContact">
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-start gap-4 cursor-pointer hover:bg-gray-50 transition-colors" (click)="optInNoContact = !optInNoContact">
             <div class="mt-1 shrink-0">
-              <div class="w-5 h-5 rounded border-2 border-gray-300 flex items-center justify-center transition-colors" [class.bg-primary]="optInNoContact" [class.border-primary]="optInNoContact">
-                <mat-icon *ngIf="optInNoContact" class="text-white font-bold" style="font-size: 14px; width: 14px; height: 14px;">check</mat-icon>
+              <div class="w-5 h-5 rounded border-2 border-gray-300 flex items-center justify-center transition-colors" [class.bg-[#f4811f]]="optInNoContact" [class.border-[#f4811f]]="optInNoContact">
+                <mat-icon *ngIf="optInNoContact" class="text-white font-bold" style="font-size: 12px; width: 12px; height: 12px;">check</mat-icon>
               </div>
             </div>
             <div class="flex-1">
-              <h4 class="font-bold text-gray-800">Opt in for No-contact Delivery</h4>
-              <p class="text-sm text-gray-500 mt-1 leading-relaxed">
+              <h4 class="font-extrabold text-gray-800 text-sm">Opt in for No-contact Delivery</h4>
+              <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">
                 Unwell, or avoiding contact? Please select no-contact delivery. Partner will safely place the order outside your door (not for COD)
               </p>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Order Summary -->
-        <div class="lg:col-span-1">
-          <app-ui-card class="sticky top-24" [padding]="true">
-            <h2 class="text-xl font-bold text-secondary mb-6 border-b border-gray-100 pb-4">Order Summary</h2>
+        <!-- Right Column: Summary + Coupon Section -->
+        <div class="lg:col-span-1 space-y-6">
+
+          <app-ui-card [padding]="true" class="block">
+            <h2 class="text-lg font-bold text-secondary mb-4 border-b border-gray-100 pb-2.5 flex items-center gap-2">
+              <mat-icon class="text-primary" style="font-size: 20px; width: 20px; height: 20px;">receipt</mat-icon> Order Summary
+            </h2>
+
+            <!-- Dynamic Offer Guide / Intimation Banner (Inline Glowing Bold) -->
+            <div *ngIf="intimationMessage()" 
+                 class="bg-orange-50 border border-orange-200 rounded-xl px-3.5 py-2.5 flex items-start gap-2.5 mb-4 shadow-[0_0_12px_rgba(244,129,31,0.25)] border-orange-400/40 animate-pulse-subtle">
+              <mat-icon class="text-[#f4811f] shrink-0" style="font-size: 18px; width: 18px; height: 18px; margin-top: 1px;">info</mat-icon>
+              <div class="flex-1 min-w-0">
+                <p class="text-[#f4811f] text-[11px] font-black tracking-wide leading-normal uppercase">
+                  {{intimationMessage()?.text}}
+                </p>
+              </div>
+            </div>
+
+            <!-- Unlocked Coupons Quick-Apply Banners -->
+            <div *ngIf="getUnlockedCoupons().length > 0" class="mb-4 space-y-2">
+              <div *ngFor="let c of getUnlockedCoupons()" 
+                class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between shadow-[0_4px_16px_rgba(16,185,129,0.08)] border-emerald-300/50">
+                <div class="flex items-center gap-2">
+                  <span class="text-base">🎉</span>
+                  <div class="min-w-0">
+                    <div class="font-extrabold text-emerald-800 text-xs tracking-wide uppercase">{{ c.code }} Unlocked!</div>
+                    <div class="text-[10px] text-emerald-600 mt-0.5 max-w-[160px] truncate leading-tight">{{ c.desc }}</div>
+                  </div>
+                </div>
+                <button (click)="applyCoupon(c)"
+                  class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-3.5 py-1.5 rounded-lg text-[9.5px] tracking-wider uppercase transition-all shadow-sm active:scale-95 cursor-pointer">
+                  APPLY
+                </button>
+              </div>
+            </div>
             
-            <!-- Coupon Section -->
-            <div class="flex gap-2 mb-6">
-              <input type="text" placeholder="Enter coupon code" class="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:bg-white transition-all text-sm uppercase">
-              <app-ui-button variant="outline">Apply</app-ui-button>
+            <!-- Coupon Code Entry -->
+            <div class="flex gap-2 mb-4">
+              <input type="text" 
+                     placeholder="ENTER COUPON CODE" 
+                     [(ngModel)]="couponInput"
+                     class="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-primary focus:bg-white transition-all text-sm uppercase font-bold text-secondary">
+              <button (click)="applyTypedCoupon()" 
+                      class="bg-gradient-to-r from-[#f4811f] to-orange-500 text-white font-extrabold px-4 py-1.5 rounded-lg text-xs uppercase shadow-sm hover:scale-105 active:scale-95 transition-all">
+                Apply
+              </button>
+            </div>
+
+            <!-- Collapsible Available Coupons Header -->
+            <div (click)="showCouponsList.set(!showCouponsList())"
+                 class="flex items-center justify-between cursor-pointer py-2.5 border-t border-b border-gray-100/80 mb-3 select-none hover:bg-gray-50/50 transition-colors">
+              <span class="text-xs font-black text-gray-500 uppercase tracking-wider">Available Coupons</span>
+              <mat-icon class="text-gray-400 transition-transform duration-300"
+                        [class.rotate-180]="showCouponsList()">
+                keyboard_arrow_down
+              </mat-icon>
+            </div>
+
+            <!-- List of Coupons inside Cart (Collapsible) -->
+            <div *ngIf="showCouponsList()" class="space-y-2 mb-4 animate-fade-in">
+              <ng-container *ngFor="let coupon of coupons">
+                <!-- Only show WELCOME50 card if they are a first-time user -->
+                <div *ngIf="coupon.code !== 'WELCOME50' || isFirstUser()"
+                     [class]="cartService.selectedCoupon()?.code === coupon.code
+                       ? 'border-2 border-green-500 bg-green-50/20'
+                       : isEligible(coupon)
+                         ? 'border border-orange-100 bg-orange-50/5 hover:border-orange-300'
+                         : 'border border-gray-100 opacity-60 bg-gray-50/20'"
+                     class="p-2.5 rounded-xl flex items-center justify-between transition-all select-none">
+                  
+                  <div class="flex-1 min-w-0 pr-2">
+                    <div class="flex items-center gap-1.5">
+                      <span class="bg-[#f4811f]/10 text-[#f4811f] text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">
+                        {{coupon.code}}
+                      </span>
+                      <span *ngIf="cartService.selectedCoupon()?.code === coupon.code" class="text-[9px] text-green-600 font-extrabold flex items-center gap-0.5">
+                        <mat-icon style="font-size:11px;width:11px;height:11px;">check_circle</mat-icon> APPLIED
+                      </span>
+                    </div>
+                    <h4 class="font-extrabold text-secondary text-[11px] mt-0.5">{{coupon.title}} - {{coupon.label}}</h4>
+                    <p class="text-[9px] text-gray-400 truncate mt-0.5">{{coupon.desc}}</p>
+                  </div>
+
+                  <button *ngIf="cartService.selectedCoupon()?.code !== coupon.code"
+                          [disabled]="!isEligible(coupon)"
+                          (click)="applyCoupon(coupon)"
+                          [class]="isEligible(coupon)
+                            ? 'text-orange-500 font-extrabold hover:text-orange-700'
+                            : 'text-gray-300 cursor-not-allowed font-medium'"
+                          class="text-[11px] uppercase tracking-wider shrink-0 px-1.5 py-0.5">
+                    Apply
+                  </button>
+                  <button *ngIf="cartService.selectedCoupon()?.code === coupon.code"
+                          (click)="removeCoupon()"
+                          class="text-[11px] text-red-500 hover:text-red-700 font-extrabold uppercase tracking-wider shrink-0 px-1.5 py-0.5">
+                    Remove
+                  </button>
+                </div>
+              </ng-container>
             </div>
 
             <!-- Bill Details -->
-            <div class="space-y-3 text-sm text-gray-600 mb-6">
+            <div class="space-y-2 text-xs text-gray-600 mb-4 border-t border-gray-100 pt-3">
               <div class="flex justify-between">
-                <span>Item Total</span>
-                <span class="font-medium text-secondary">₹{{cartService.cartSummary().subtotal | number:'1.2-2'}}</span>
+                <span>Item Subtotal</span>
+                <span class="font-bold text-secondary">₹{{subtotal() | number:'1.2-2'}}</span>
               </div>
-              <div class="flex justify-between text-green-600" *ngIf="cartService.cartSummary().discount > 0">
-                <span>Item Discount</span>
-                <span class="font-medium">-₹{{cartService.cartSummary().discount | number:'1.2-2'}}</span>
+              <div class="flex justify-between text-green-600 font-bold animate-fade-in" *ngIf="cartService.cartSummary().discount > 0">
+                <span class="flex items-center gap-0.5">
+                  <mat-icon style="font-size:14px;width:14px;height:14px;" class="mt-0.5">local_offer</mat-icon>
+                  Coupon Savings ({{cartService.selectedCoupon()?.code}})
+                </span>
+                <span>-₹{{cartService.cartSummary().discount | number:'1.2-2'}}</span>
               </div>
               <div class="flex justify-between">
                 <span>Taxes (5%)</span>
-                <span class="font-medium text-secondary">₹{{cartService.cartSummary().taxes | number:'1.2-2'}}</span>
+                <span class="font-bold text-secondary">₹{{cartService.cartSummary().taxes | number:'1.2-2'}}</span>
               </div>
               <div class="flex justify-between">
                 <span>Delivery Charge</span>
-                <span class="font-medium text-secondary">₹{{cartService.cartSummary().deliveryCharge | number:'1.2-2'}}</span>
+                <span class="font-bold text-secondary">₹{{cartService.cartSummary().deliveryCharge | number:'1.2-2'}}</span>
               </div>
-              <div class="flex justify-between pb-3 border-b border-gray-100">
+              <div class="flex justify-between pb-2.5 border-b border-gray-100">
                 <span>Packaging Charge</span>
-                <span class="font-medium text-secondary">₹{{cartService.cartSummary().packageCharge | number:'1.2-2'}}</span>
+                <span class="font-bold text-secondary">₹{{cartService.cartSummary().packageCharge | number:'1.2-2'}}</span>
               </div>
-              <div class="flex justify-between text-lg font-bold text-secondary pt-2">
+              <div class="flex justify-between text-base font-black text-secondary pt-1.5">
                 <span>To Pay</span>
-                <span>₹{{cartService.cartSummary().total | number:'1.2-2'}}</span>
+                <span class="text-[#f4811f] text-lg">₹{{cartService.cartSummary().total | number:'1.2-2'}}</span>
               </div>
             </div>
 
-            <!-- Savings Banner -->
-            <div *ngIf="cartService.cartSummary().savedAmount > 0" class="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center justify-center gap-2 mb-6 shadow-sm">
-              <span class="text-green-700 font-extrabold text-sm uppercase tracking-wide">You saved ₹{{cartService.cartSummary().savedAmount | number:'1.0-0'}} on this order! 🎉</span>
-            </div>
-
-            <app-ui-button variant="primary" [fullWidth]="true" routerLink="/checkout">Proceed to Checkout</app-ui-button>
+            <app-ui-button variant="primary" [fullWidth]="true" routerLink="/checkout" class="block w-full mt-4 mb-2">
+              Proceed to Checkout
+            </app-ui-button>
           </app-ui-card>
         </div>
       </div>
@@ -129,27 +238,253 @@ import { CartItem } from '../../models';
       <!-- Empty Cart -->
       <ng-template #emptyCart>
         <div class="flex flex-col items-center justify-center py-16 text-center">
-          <div class="w-64 h-64 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-            <mat-icon style="font-size: 120px; width: 120px; height: 120px;" class="text-gray-300">remove_shopping_cart</mat-icon>
+          <div class="w-48 h-48 bg-gray-50 rounded-full flex items-center justify-center mb-6 border border-gray-100">
+            <mat-icon style="font-size: 80px; width: 80px; height: 80px;" class="text-gray-300">remove_shopping_cart</mat-icon>
           </div>
-          <h2 class="text-2xl font-bold text-secondary mb-2">Your cart is empty</h2>
-          <p class="text-gray-500 mb-8 max-w-md">Looks like you haven't added anything to your cart yet. Explore our top restaurants and dishes!</p>
-          <app-ui-button variant="primary" routerLink="/products">Browse Menu</app-ui-button>
+          <h2 class="text-2xl font-extrabold text-secondary mb-2">Your cart is empty</h2>
+          <p class="text-gray-500 mb-8 max-w-sm text-sm">Looks like you haven't added anything to your cart yet. Explore our delicious categories!</p>
+          <app-ui-button variant="primary" routerLink="/">Browse Categories</app-ui-button>
         </div>
       </ng-template>
     </div>
   `
 })
-export class Cart {
+export class Cart implements OnInit {
   cartService = inject(CartService);
   discountService = inject(DiscountService);
+  orderService = inject(OrderService);
+  customerService = inject(CustomerService);
+
   optInNoContact = false;
+  couponInput: string = '';
+  isFirstUser = signal<boolean>(false);
+  showCouponsList = signal<boolean>(false);
+
+  // Coupons data list
+  coupons = [
+    { code: 'WELCOME50', label: 'New User', title: '50% OFF', desc: 'Enjoy 50% off up to ₹150 on your very first order', type: 'percentage', value: 50, max: 150, min: 0 },
+    { code: 'FLAT80', label: 'Valid Now', title: '₹80 OFF', desc: 'Enjoy a flat ₹80 discount when you place an order of ₹300 or more', type: 'flat', value: 80, min: 300 },
+    { code: 'TREND100', label: 'Trending', title: '₹100 OFF', desc: 'Get a fantastic ₹100 discount on all orders exceeding ₹500', type: 'flat', value: 100, min: 500 },
+    { code: 'FEAST200', label: 'Premium', title: '₹200 OFF', desc: 'Instant ₹200 savings! Treat yourself to a grand feast for orders above ₹1500', type: 'flat', value: 200, min: 1500 }
+  ];
+
+  subtotal = computed(() => this.cartService.cartSummary().subtotal);
+
+  // Dynamic intimation guide banner helper
+  intimationMessage = computed(() => {
+    const sub = this.subtotal();
+    if (sub === 0) return null;
+    
+    // 1. Check FLAT80 (min: 300)
+    if (sub < 300) {
+      const diff = 300 - sub;
+      return { text: `Add ₹${diff.toFixed(2)} more to avail ₹80 OFF (FLAT80)!`, diff, nextVal: 80, nextCode: 'FLAT80' };
+    }
+    // 2. Check TREND100 (min: 500)
+    if (sub < 500) {
+      const diff = 500 - sub;
+      return { text: `Add ₹${diff.toFixed(2)} more to avail ₹100 OFF (TREND100)!`, diff, nextVal: 100, nextCode: 'TREND100' };
+    }
+    // 3. Check FEAST200 (min: 1500)
+    if (sub < 1500) {
+      const diff = 1500 - sub;
+      return { text: `Add ₹${diff.toFixed(2)} more to avail ₹200 OFF (FEAST200)!`, diff, nextVal: 200, nextCode: 'FEAST200' };
+    }
+    return null;
+  });
+
+  ngOnInit() {
+    this.checkUserOrderHistory();
+
+    // Add dynamic scratch card reward to the list of available coupons if unlocked & valid
+    try {
+      const raw = localStorage.getItem('ownbites_scratch_coupon');
+      if (raw) {
+        const sc = JSON.parse(raw);
+        if (sc.revealed && sc.code && sc.amount > 0 && sc.expiry > Date.now()) {
+          // Check if not already in the list
+          if (!this.coupons.some(c => c.code === sc.code)) {
+            this.coupons.push({
+              code: sc.code,
+              label: 'Scratch Reward',
+              title: '₹20 OFF',
+              desc: 'Scratch card reward discount',
+              type: 'flat',
+              value: sc.amount,
+              min: 0
+            });
+          }
+        }
+      }
+    } catch { /* ignore */ }
+
+    // Auto-apply copied coupon code if any
+    try {
+      const copied = localStorage.getItem('ownbites_copied_coupon');
+      if (copied) {
+        const couponToApply = this.coupons.find(c => c.code === copied);
+        if (couponToApply) {
+          this.applyCoupon(couponToApply);
+        } else {
+          // If not in standard coupons list, check scratch coupon storage
+          const rawSc = localStorage.getItem('ownbites_scratch_coupon');
+          if (rawSc) {
+            const sc = JSON.parse(rawSc);
+            if (sc.code === copied && sc.revealed && sc.amount > 0 && sc.expiry > Date.now()) {
+              const tempCoupon = {
+                code: sc.code,
+                label: 'Scratch Reward',
+                title: '₹20 OFF',
+                desc: 'Scratch card reward discount',
+                type: 'flat',
+                value: sc.amount,
+                min: 0
+              };
+              this.applyCoupon(tempCoupon);
+            }
+          }
+        }
+        localStorage.removeItem('ownbites_copied_coupon');
+      }
+    } catch { /* ignore */ }
+  }
+
+  checkUserOrderHistory() {
+    const customer = this.customerService.currentUser();
+    if (!customer) {
+      this.isFirstUser.set(true);
+      return;
+    }
+
+    this.orderService.getOrders().subscribe({
+      next: (orders) => {
+        if (!orders || orders.length === 0) {
+          this.isFirstUser.set(true);
+        } else {
+          this.isFirstUser.set(false);
+          // If a WELCOME50 coupon was previously applied but user is not first-time, remove it
+          if (this.cartService.selectedCoupon()?.code === 'WELCOME50') {
+            this.removeCoupon();
+          }
+        }
+      },
+      error: () => {
+        this.isFirstUser.set(true);
+      }
+    });
+  }
+
+  isEligible(coupon: any): boolean {
+    return this.subtotal() >= coupon.min;
+  }
+
+  applyCoupon(coupon: any) {
+    if (coupon.code === 'WELCOME50' && !this.isFirstUser()) {
+      alert('The WELCOME50 coupon is only eligible for first-time users.');
+      return;
+    }
+
+    if (!this.isEligible(coupon)) {
+      alert(`Minimum order value of ₹${coupon.min} required to apply this coupon.`);
+      return;
+    }
+
+    let discount = 0;
+    if (coupon.type === 'flat') {
+      discount = coupon.value;
+    } else if (coupon.type === 'percentage') {
+      discount = (this.subtotal() * coupon.value) / 100;
+      if (coupon.max) {
+        discount = Math.min(discount, coupon.max);
+      }
+    }
+
+    this.cartService.selectedCoupon.set(coupon);
+    this.cartService.discountAmount.set(discount);
+    this.couponInput = coupon.code;
+    this.showCouponsList.set(false); // Collapse the list after applying
+  }
+
+  applyTypedCoupon() {
+    const code = this.couponInput.trim().toUpperCase();
+    if (!code) return;
+
+    // Direct check for custom generated scratch reward coupon manually
+    try {
+      const raw = localStorage.getItem('ownbites_scratch_coupon');
+      if (raw) {
+        const sc = JSON.parse(raw);
+        if (sc.revealed && sc.code && sc.amount > 0 && sc.expiry > Date.now()) {
+          if (code === sc.code.toUpperCase()) {
+            const tempCoupon = {
+              code: sc.code,
+              label: 'Scratch Reward',
+              title: '₹20 OFF',
+              desc: 'Scratch card reward discount',
+              type: 'flat',
+              value: sc.amount,
+              min: 0
+            };
+            this.applyCoupon(tempCoupon);
+            return;
+          }
+        }
+      }
+    } catch { /* ignore */ }
+
+    const coupon = this.coupons.find(c => c.code === code);
+    if (!coupon) {
+      alert('Invalid coupon code entered.');
+      return;
+    }
+
+    this.applyCoupon(coupon);
+  }
+
+  removeCoupon() {
+    this.cartService.selectedCoupon.set(null);
+    this.cartService.discountAmount.set(0);
+    this.couponInput = '';
+  }
 
   increaseQuantity(item: CartItem) {
     this.cartService.updateQuantity(item.product.id, item.quantity + 1);
+    this.recalculateDiscount();
   }
 
   decreaseQuantity(item: CartItem) {
     this.cartService.updateQuantity(item.product.id, item.quantity - 1);
+    this.recalculateDiscount();
+  }
+
+  recalculateDiscount() {
+    // If a coupon is currently active, recalculate the discount amount or remove if no longer eligible
+    const active = this.cartService.selectedCoupon();
+    if (active) {
+      const sub = this.subtotal();
+      if (sub < active.min) {
+        // No longer eligible due to quantity reduction
+        this.removeCoupon();
+      } else {
+        // Re-apply to update calculation
+        this.applyCoupon(active);
+      }
+    }
+  }
+
+  getUnlockedCoupons(): any[] {
+    const sub = this.subtotal();
+    const applied = this.cartService.selectedCoupon();
+    
+    return this.coupons.filter(c => {
+      // Ignore if already applied
+      if (applied && applied.code === c.code) return false;
+      
+      // Check WELCOME50 first-time user eligibility
+      if (c.code === 'WELCOME50' && !this.isFirstUser()) return false;
+      
+      // Check minimum order value condition
+      return sub >= c.min;
+    });
   }
 }

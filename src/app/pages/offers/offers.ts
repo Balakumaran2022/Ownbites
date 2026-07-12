@@ -1,12 +1,13 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { UiCard } from '../../shared/components/ui-card/ui-card';
 
 @Component({
   selector: 'app-offers',
   standalone: true,
-  imports: [CommonModule, MatIconModule, UiCard],
+  imports: [CommonModule, RouterLink, MatIconModule, UiCard],
   template: `
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       

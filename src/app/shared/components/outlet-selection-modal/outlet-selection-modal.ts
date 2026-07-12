@@ -35,39 +35,39 @@ import { Outlet } from '../../../models';
             <button (click)="fetchOutlets()" class="bg-white text-red-600 font-bold px-6 py-2 rounded-lg shadow-sm hover:shadow transition-shadow">Try Again</button>
           </div>
 
-          <!-- Outlets List -->
-          <div *ngIf="!loading() && !error() && outlets().length > 0" class="space-y-4">
+          <!-- Outlets Grid (2 per row) -->
+          <div *ngIf="!loading() && !error() && outlets().length > 0" class="grid grid-cols-2 gap-3">
             <div *ngFor="let outlet of outlets()" 
                  (click)="selectOutlet(outlet)"
-                 class="bg-white border-2 border-gray-100 rounded-2xl p-5 cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-all shadow-sm group relative">
+                 class="bg-white border-2 border-gray-100 rounded-2xl p-4 cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-all shadow-sm group relative flex flex-col">
               
-              <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
-                  <mat-icon style="font-size: 16px; width: 16px; height: 16px;">check</mat-icon>
+              <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+                  <mat-icon style="font-size: 14px; width: 14px; height: 14px;">check</mat-icon>
                 </div>
               </div>
 
-              <div class="flex items-center gap-3 mb-4">
-                <div class="w-12 h-12 rounded-full bg-orange-50 text-primary flex items-center justify-center shrink-0">
+              <div class="flex flex-col items-start gap-2 mb-3">
+                <div class="w-10 h-10 rounded-full bg-orange-50 text-primary flex items-center justify-center shrink-0">
                   <mat-icon>storefront</mat-icon>
                 </div>
                 <div>
-                  <h3 class="font-bold text-secondary text-lg leading-tight">{{outlet.name}}</h3>
+                  <h3 class="font-bold text-secondary text-sm leading-tight">{{outlet.name}}</h3>
                   <div class="flex items-center gap-1 mt-1">
-                    <span class="w-2 h-2 rounded-full" [ngClass]="outlet.storeStatus ? 'bg-green-500' : 'bg-red-500'"></span>
-                    <span class="text-xs font-bold uppercase tracking-wide" [ngClass]="outlet.storeStatus ? 'text-green-600' : 'text-red-600'">{{outlet.storeStatus ? 'Open Now' : 'Currently Closed'}}</span>
+                    <span class="w-2 h-2 rounded-full shrink-0" [ngClass]="outlet.storeStatus ? 'bg-green-500' : 'bg-red-500'"></span>
+                    <span class="text-xs font-bold uppercase tracking-wide" [ngClass]="outlet.storeStatus ? 'text-green-600' : 'text-red-600'">{{outlet.storeStatus ? 'Open' : 'Closed'}}</span>
                   </div>
                 </div>
               </div>
 
-              <div class="space-y-2">
-                <div class="flex items-start gap-2 text-sm">
-                  <mat-icon style="font-size: 16px; width: 16px; height: 16px;" class="text-gray-400 mt-0.5 shrink-0">location_on</mat-icon>
-                  <span class="text-gray-600 leading-snug">{{outlet.address}}</span>
+              <div class="space-y-1.5 mt-auto">
+                <div class="flex items-start gap-1.5 text-xs">
+                  <mat-icon style="font-size: 13px; width: 13px; height: 13px;" class="text-gray-400 mt-0.5 shrink-0">location_on</mat-icon>
+                  <span class="text-gray-500 leading-snug line-clamp-2">{{outlet.address}}</span>
                 </div>
-                <div class="flex items-center gap-2 text-sm" *ngIf="outlet.contact">
-                  <mat-icon style="font-size: 16px; width: 16px; height: 16px;" class="text-gray-400 shrink-0">phone</mat-icon>
-                  <span class="text-gray-600 font-medium">+{{outlet.contact}}</span>
+                <div class="flex items-center gap-1.5 text-xs" *ngIf="outlet.contact">
+                  <mat-icon style="font-size: 13px; width: 13px; height: 13px;" class="text-gray-400 shrink-0">phone</mat-icon>
+                  <span class="text-gray-500 font-medium">+{{outlet.contact}}</span>
                 </div>
               </div>
 

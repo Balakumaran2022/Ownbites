@@ -5,6 +5,11 @@ import { CommonModule } from '@angular/common';
   selector: 'app-ui-card',
   standalone: true,
   imports: [CommonModule],
+  styles: [`
+    :host {
+      display: block;
+    }
+  `],
   template: `
     <div
       [ngClass]="[
