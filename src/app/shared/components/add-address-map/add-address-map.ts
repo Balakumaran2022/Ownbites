@@ -254,6 +254,8 @@ export class AddAddressMapComponent implements OnInit, OnDestroy {
       city: city,
       state: state,
       zip: zip,
+      latitude: this.center().lat,
+      longitude: this.center().lng,
       isDefault: false
     };
 

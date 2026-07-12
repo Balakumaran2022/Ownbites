@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Address } from '../models';
+import { Address, AddressType } from '../models';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -60,14 +60,63 @@ export class AddressService {
     this.currentAddress.set(address);
   }
 
-  getAddresses(customerPhoneNo: string): Observable<Address[]> {
-    return this.http.post<{success: boolean, data: Address[]}>(`${environment.apiUrl}/customer/get-addresses`, {
-      customerPhoneNo: customerPhoneNo
-    }).pipe(map(res => res.data));
+  private mapBackendAddressToFrontend(raw: any): Address {
+    if (!raw) {
+      return {
+        id: '',
+        type: 'Other',
+        street: '',
+        city: '',
+        state: '',
+        zip: '',
+        isDefault: false
+      };
+    }
+    let type: AddressType = 'Other';
+    const rawType = (raw.type || '').toLowerCase();
+    if (rawType === 'home') {
+      type = 'Home';
+    } else if (rawType === 'office' || rawType === 'work') {
+      type = 'Office';
+    }
+    
+    return {
+      id: raw._id || raw.id || '',
+      type: type,
+      street: raw.address || (raw.address1 ? `${raw.address1}, ${raw.address2 || ''}`.trim() : raw.street || ''),
+      city: raw.city || '',
+      state: raw.state || '',
+      zip: raw.pincode || raw.zip || '',
+      isDefault: raw.isDefault || false
+    };
   }
 
-  createAddress(addressData: Partial<Address>): Observable<Address> {
-    return this.http.post<{success: boolean, data: Address}>(`${environment.apiUrl}/customer/create-address`, addressData)
-      .pipe(map(res => res.data));
+  getAddresses(customerPhoneNo: string): Observable<Address[]> {
+    return this.http.post<{status: string, data: any[]}>(`${environment.apiUrl}/customer/get-addresses`, {
+      customerPhoneNo: customerPhoneNo
+    }).pipe(
+      map(res => {
+        const rawList = res.data || [];
+        return rawList.map(item => this.mapBackendAddressToFrontend(item));
+      })
+    );
+  }
+
+  createAddress(addressData: Partial<Address> & { latitude?: number; longitude?: number }): Observable<Address> {
+    const backendPayload = {
+      address1: addressData.street || '',
+      address2: '',
+      city: addressData.city || '',
+      state: addressData.state || '',
+      country: 'India',
+      pincode: addressData.zip || '',
+      latitude: addressData.latitude || 0,
+      longitude: addressData.longitude || 0,
+      landMark: '',
+      type: addressData.type === 'Office' ? 'work' : addressData.type === 'Home' ? 'home' : 'other'
+    };
+
+    return this.http.post<{status: string, data: any}>(`${environment.apiUrl}/customer/create-address`, backendPayload)
+      .pipe(map(res => this.mapBackendAddressToFrontend(res.data)));
   }
 }
