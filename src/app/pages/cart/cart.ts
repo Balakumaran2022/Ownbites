@@ -303,7 +303,8 @@ export class Cart implements OnInit {
   // Dynamic intimation guide banner helper
   intimationMessage = computed(() => {
     const sub = this.subtotal();
-    if (sub === 0) return null;
+    // Priority 1: First-time users should only see WELCOME50, do not prompt for subtotal thresholds
+    if (sub === 0 || this.isFirstUser()) return null;
     
     // 1. Check FLAT80 (min: 300)
     if (sub < 300) {
@@ -559,16 +560,36 @@ export class Cart implements OnInit {
   getUnlockedCoupons(): any[] {
     const sub = this.subtotal();
     const applied = this.cartService.selectedCoupon();
-    
+    const isNew = this.isFirstUser();
+
+    // Priority check: find the single eligible subtotal-based coupon for non-new users
+    let eligibleSubtotalCouponCode = '';
+    if (!isNew) {
+      if (sub >= 300 && sub < 500) {
+        eligibleSubtotalCouponCode = 'FLAT80';
+      } else if (sub >= 500 && sub < 1500) {
+        eligibleSubtotalCouponCode = 'TREND100';
+      } else if (sub >= 1500) {
+        eligibleSubtotalCouponCode = 'FEAST200';
+      }
+    }
+
     return this.coupons.filter(c => {
       // Ignore if already applied
       if (applied && applied.code === c.code) return false;
-      
-      // Check WELCOME50 first-time user eligibility
-      if (c.code === 'WELCOME50' && !this.isFirstUser()) return false;
-      
-      // Check minimum order value condition
-      return sub >= c.min;
+
+      // WELCOME50 is priority 1, only for new users
+      if (c.code === 'WELCOME50') {
+        return isNew;
+      }
+
+      // Scratch Reward coupons are always listed as eligible options
+      if (c.label === 'Scratch Reward') {
+        return true;
+      }
+
+      // Subtotal coupons are only shown if they match the active range eligibility code
+      return c.code === eligibleSubtotalCouponCode;
     });
   }
   quickAddProduct(product: any) {
