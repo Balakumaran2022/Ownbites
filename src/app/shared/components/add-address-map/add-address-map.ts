@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import * as L from 'leaflet';
 import { AddressService } from '../../../services/address';
 import { CustomerService } from '../../../services/customer';
+import { LocationService } from '../../../services/location';
 import { Address } from '../../../models';
 
 @Component({
@@ -109,6 +110,7 @@ export class AddAddressMapComponent implements OnInit, OnDestroy {
 
   addressService = inject(AddressService);
   customerService = inject(CustomerService);
+  locationService = inject(LocationService);
   http = inject(HttpClient);
 
   map!: L.Map;
@@ -182,21 +184,21 @@ export class AddAddressMapComponent implements OnInit, OnDestroy {
 
   reverseGeocode(lat: number, lng: number) {
     this.loadingLocation.set(true);
-    // Free OSM Nominatim API
-    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
-    
-    this.http.get<any>(url).subscribe({
+    this.locationService.reverseGeocode(lat, lng).subscribe({
       next: (res) => {
-        if (res && res.display_name) {
-          this.formattedAddress.set(res.display_name);
-          this.checkServiceArea(res.display_name);
+        const results = res.data?.results || res.results || [];
+        if (results && results.length > 0 && results[0].formatted_address) {
+          const address = results[0].formatted_address;
+          this.formattedAddress.set(address);
+          this.checkServiceArea(address);
         } else {
           this.formattedAddress.set('Unknown location');
           this.outOfServiceArea.set(true);
         }
         this.loadingLocation.set(false);
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error reverse geocoding:', err);
         this.formattedAddress.set('Could not fetch address details');
         this.outOfServiceArea.set(true);
         this.loadingLocation.set(false);
@@ -213,19 +215,22 @@ export class AddAddressMapComponent implements OnInit, OnDestroy {
   searchLocation() {
     if (!this.searchQuery.trim()) return;
     this.searching.set(true);
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(this.searchQuery)}&limit=1`;
     
-    this.http.get<any[]>(url).subscribe({
+    this.locationService.forwardGeocode(this.searchQuery).subscribe({
       next: (res) => {
         this.searching.set(false);
-        if (res && res.length > 0) {
-          const lat = parseFloat(res[0].lat);
-          const lng = parseFloat(res[0].lon);
-          this.map.flyTo([lat, lng], 16, { duration: 1.5 });
-          // reverseGeocode will trigger automatically from 'moveend' event
+        const results = res.results || res.data?.results || [];
+        if (results && results.length > 0) {
+          const first = results[0];
+          const lat = first.geometry?.location?.lat;
+          const lng = first.geometry?.location?.lng;
+          if (lat != null && lng != null) {
+            this.map.flyTo([lat, lng], 16, { duration: 1.5 });
+          }
         }
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error forward geocoding:', err);
         this.searching.set(false);
       }
     });

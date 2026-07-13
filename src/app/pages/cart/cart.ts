@@ -7,9 +7,11 @@ import { CartService } from '../../services/cart';
 import { DiscountService } from '../../services/discount';
 import { OrderService } from '../../services/order';
 import { CustomerService } from '../../services/customer';
+import { ProductService } from '../../services/product';
 import { UiButton } from '../../shared/components/ui-button/ui-button';
 import { UiCard } from '../../shared/components/ui-card/ui-card';
 import { CartItem } from '../../models';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-cart',
@@ -104,13 +106,39 @@ import { CartItem } from '../../models';
             </h2>
 
             <!-- Dynamic Offer Guide / Intimation Banner (Inline Glowing Bold) -->
-            <div *ngIf="intimationMessage()" 
-                 class="bg-orange-50 border border-orange-200 rounded-xl px-3.5 py-2.5 flex items-start gap-2.5 mb-4 shadow-[0_0_12px_rgba(244,129,31,0.25)] border-orange-400/40 animate-pulse-subtle">
-              <mat-icon class="text-[#f4811f] shrink-0" style="font-size: 18px; width: 18px; height: 18px; margin-top: 1px;">info</mat-icon>
-              <div class="flex-1 min-w-0">
-                <p class="text-[#f4811f] text-[11px] font-black tracking-wide leading-normal uppercase">
-                  {{intimationMessage()?.text}}
-                </p>
+            <div *ngIf="intimationMessage() as msg" 
+                 class="bg-orange-50 border border-orange-200 rounded-2xl p-4 mb-4 shadow-[0_0_12px_rgba(244,129,31,0.25)] border-orange-400/40 animate-pulse-subtle flex flex-col gap-3">
+              <div class="flex items-start gap-2.5">
+                <mat-icon class="text-[#f4811f] shrink-0" style="font-size: 18px; width: 18px; height: 18px; margin-top: 1px;">info</mat-icon>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[#f4811f] text-[11px] font-black tracking-wide leading-normal uppercase">
+                    {{msg.text}}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Dynamic Quick Add recommendations for faster threshold completion -->
+              <div *ngIf="quickAddRecommendations().length > 0" class="border-t border-orange-200/50 pt-2.5 space-y-2">
+                <span class="text-[10px] font-bold text-orange-600 uppercase tracking-wider block">⚡ Quick Add to unlock discount:</span>
+                <div class="flex flex-col gap-2">
+                  <div *ngFor="let rec of quickAddRecommendations()" 
+                       class="flex items-center justify-between bg-white rounded-xl p-2 border border-orange-100 shadow-sm">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <img [src]="rec.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&q=80'" 
+                           [alt]="rec.name" 
+                           class="w-8 h-8 rounded-lg object-cover border border-orange-50 shrink-0">
+                      <div class="min-w-0">
+                        <div class="font-extrabold text-gray-800 text-xs truncate leading-tight">{{rec.name}}</div>
+                        <div class="text-[10px] text-primary font-black mt-0.5">₹{{rec.price}}</div>
+                      </div>
+                    </div>
+                    <button (click)="quickAddProduct(rec)" 
+                            class="bg-[#f4811f] hover:bg-orange-600 text-white font-black px-3.5 py-1.5 rounded-lg text-[9.5px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex items-center gap-1 shrink-0">
+                      <span>Add</span>
+                      <mat-icon style="font-size: 10px; width: 10px; height: 10px;" class="text-white">add</mat-icon>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -254,11 +282,13 @@ export class Cart implements OnInit {
   discountService = inject(DiscountService);
   orderService = inject(OrderService);
   customerService = inject(CustomerService);
+  productService = inject(ProductService);
 
   optInNoContact = false;
   couponInput: string = '';
   isFirstUser = signal<boolean>(false);
   showCouponsList = signal<boolean>(false);
+  allProducts = signal<any[]>([]);
 
   // Coupons data list
   coupons = [
@@ -293,8 +323,43 @@ export class Cart implements OnInit {
     return null;
   });
 
+  quickAddRecommendations = computed(() => {
+    const msg = this.intimationMessage();
+    if (!msg) return [];
+    
+    const diff = msg.diff;
+    const items = this.allProducts();
+    const cartItemIds = new Set(this.cartService.cartItems().map(i => i.product.id));
+    
+    // Filter items: in stock, not already in cart
+    let eligible = items.filter(p => p.inStock && !cartItemIds.has(p.id));
+    if (eligible.length === 0) {
+      eligible = items.filter(p => p.inStock);
+    }
+    
+    // Sort by price: prefer items that are >= diff so a single add unlocks the coupon,
+    // or items that are closest to diff.
+    eligible.sort((a, b) => {
+      const diffA = a.price - diff;
+      const diffB = b.price - diff;
+      
+      if (diffA >= 0 && diffB < 0) return -1;
+      if (diffB >= 0 && diffA < 0) return 1;
+      
+      return Math.abs(diffA) - Math.abs(diffB);
+    });
+    
+    return eligible.slice(0, 3);
+  });
+
   ngOnInit() {
     this.checkUserOrderHistory();
+
+    // Fetch all products for dynamic threshold recommendations
+    this.productService.getProductsByOutlet(environment.outletId).subscribe({
+      next: (res) => this.allProducts.set(res || []),
+      error: (err) => console.error('Error loading products for recommendations:', err)
+    });
 
     // Add dynamic scratch card reward to the list of available coupons if unlocked & valid
     try {
@@ -486,5 +551,8 @@ export class Cart implements OnInit {
       // Check minimum order value condition
       return sub >= c.min;
     });
+  }
+  quickAddProduct(product: any) {
+    this.cartService.addToCart(product);
   }
 }

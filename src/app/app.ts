@@ -15,6 +15,8 @@ import { OutletService } from './services/outlet';
 import { OutletSelectionModalComponent } from './shared/components/outlet-selection-modal/outlet-selection-modal';
 import { CartService } from './services/cart';
 import { MatIconModule } from '@angular/material/icon';
+import { OrganizationService } from './services/organization';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -217,6 +219,7 @@ export class AppComponent implements OnInit {
   orderService = inject(OrderService);
   outletService = inject(OutletService);
   cartService = inject(CartService);
+  organizationService = inject(OrganizationService);
   router = inject(Router);
   showMap = signal<boolean>(false);
   showAddressModal = signal<boolean>(false);
@@ -229,6 +232,17 @@ export class AppComponent implements OnInit {
       localStorage.setItem('ownbites_orders_clear_time', Date.now().toString());
       localStorage.removeItem('ownbites_recent_orders');
     }
+
+    // Call API 1 & API 4 to fetch organization details and settings
+    this.organizationService.getOrganization('ieyal').subscribe({
+      next: (res) => console.log('[Org] Get Organization raw response:', JSON.stringify(res)),
+      error: (err) => console.error('[Org] Get Organization failed:', err)
+    });
+
+    this.organizationService.getSettings(environment.outletId).subscribe({
+      next: (res) => console.log('[Org] Get Settings raw response:', JSON.stringify(res)),
+      error: (err) => console.error('[Org] Get Settings failed:', err)
+    });
   }
 
   isClosedGateActive(): boolean {
