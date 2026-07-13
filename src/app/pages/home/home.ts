@@ -64,7 +64,7 @@ import { Router } from '@angular/router';
           </ng-container>
           <ng-template #cats>
             <div class="flex gap-6 w-max">
-              <div *ngFor="let cat of categories(); let i = index" class="flex flex-col items-center gap-2 min-w-[96px] cursor-pointer group shrink-0 snap-start" (click)="goToCategory(cat.id, i)">
+              <div *ngFor="let cat of categories(); let i = index" class="flex flex-col items-center gap-2 min-w-[96px] cursor-pointer group shrink-0 snap-start" (click)="goToCategory(cat.id, cat.name)">
                 <div class="w-24 h-24 rounded-full overflow-hidden shadow hover:shadow-md transition-all duration-500 group-hover:-translate-y-1 relative">
                   <img [src]="cat.imageUrl" [alt]="cat.name" class="w-full h-full object-cover" />
                   <div class="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors"></div>
@@ -139,7 +139,7 @@ import { Router } from '@angular/router';
           <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             <div *ngFor="let group of filteredMenuGroups(); let idx = index"
                  class="rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group/cat select-none hover:-translate-y-1"
-                 (click)="goToCategoryPage(group.category.id, idx)">
+                 (click)="goToCategoryPage(group.category.id, group.category.name)">
 
               <!-- Image + Overlay -->
               <div class="relative w-full h-56 md:h-64 overflow-hidden bg-gray-900">
@@ -164,9 +164,9 @@ import { Router } from '@angular/router';
                  <!-- Category name + veg counts + offer text at bottom -->
                  <div class="absolute bottom-0 left-0 right-0 px-3 pb-3 pt-8">
                    <!-- Swiggy style: bold orange offer text directly above category name, no white background -->
-                   <div class="text-[#f4811f] font-black text-sm uppercase tracking-wide drop-shadow mb-0.5">
-                     {{getOfferText(idx)}}
-                   </div>
+                    <div class="text-[#f4811f] font-black text-sm uppercase tracking-wide drop-shadow mb-0.5">
+                      {{getOfferText(group.category.name)}}
+                    </div>
                    <h3 class="text-white font-extrabold text-base leading-snug drop-shadow-md">
                      {{group.category.name}}
                    </h3>
@@ -463,14 +463,14 @@ export class Home implements OnInit {
     return this.menuSheetExpandedCategories().has(categoryId);
   }
 
-  goToCategory(categoryId: string, index: number) {
-    const offer = this.getOfferText(index);
+  goToCategory(categoryId: string, categoryName: string) {
+    const offer = this.getOfferText(categoryName);
     const diet = this.filterState();
     this.router.navigate(['/products'], { queryParams: { category: categoryId, offer: offer, diet: diet } });
   }
 
-  goToCategoryPage(categoryId: string, index: number) {
-    const offer = this.getOfferText(index);
+  goToCategoryPage(categoryId: string, categoryName: string) {
+    const offer = this.getOfferText(categoryName);
     const diet = this.filterState();
     this.router.navigate(['/products'], { queryParams: { category: categoryId, offer: offer, diet: diet } });
   }
@@ -522,13 +522,17 @@ export class Home implements OnInit {
     return items.filter(i => i.isNonVeg || !i.isVeg).length;
   }
 
-  getOfferText(index: number): string {
+  getOfferText(categoryName: string): string {
     const offers = [
       '₹80 OFF ABOVE ₹300',
       '₹100 OFF ABOVE ₹500',
       '₹200 OFF ABOVE ₹1500'
     ];
-    return offers[index % offers.length];
+    let hash = 0;
+    for (let i = 0; i < categoryName.length; i++) {
+      hash += categoryName.charCodeAt(i);
+    }
+    return offers[hash % offers.length];
   }
 
 }
