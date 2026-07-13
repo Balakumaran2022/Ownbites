@@ -1,0 +1,80 @@
+[build]
+  command = "npm run build"
+  publish = "dist/food-ordering-app/browser"
+
+[[redirects]]
+  from = "/customer/*"
+  to = "https://backend2.owct.me/customer/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/category/*"
+  to = "https://backend2.owct.me/category/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/product/*"
+  to = "https://backend2.owct.me/product/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/cart/*"
+  to = "https://backend2.owct.me/cart/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/order/*"
+  to = "https://backend2.owct.me/order/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/outlet/*"
+  to = "https://backend2.owct.me/outlet/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/item/*"
+  to = "https://backend2.owct.me/item/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/organization/*"
+  to = "https://backend2.owct.me/organization/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/banner/*"
+  to = "https://backend2.owct.me/banner/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/discount/*"
+  to = "https://backend2.owct.me/discount/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/setting/*"
+  to = "https://backend2.owct.me/setting/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/location/*"
+  to = "https://backend2.owct.me/location/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
