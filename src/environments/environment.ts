@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
   apiUrl: '',
-  belongsTo: '69b256ec99b143835b75ee69',
-  outletId: '6a26675eee35a470359a1c44'
+  belongsTo: '685670e4486951278738864e',
+  outletId: '6a47361e1898af1200d559e1'
 };
