@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { User } from '../models';
 import { environment } from '../../environments/environment';
@@ -33,12 +33,6 @@ export class CustomerService {
 
   login(phone: string): Observable<string> {
     const formattedPhone = phone.startsWith('91') && phone.length > 10 ? phone : `91${phone}`;
-    
-    // Bypass OTP sending for the specified test number
-    if (formattedPhone === '919385452868') {
-      return of('OTP sent successfully (Bypassed)');
-    }
-
     return this.http.post<{status: string, message: string}>(`${environment.apiUrl}/customer/login`, {
       phone: formattedPhone,
       belongsTo: environment.belongsTo,
@@ -48,21 +42,6 @@ export class CustomerService {
 
   verifyOtp(phone: string, otp: string): Observable<{token: string, customer: User}> {
     const formattedPhone = phone.startsWith('91') && phone.length > 10 ? phone : `91${phone}`;
-    
-    // Bypass verification for the test number and default OTP '123456'
-    if (formattedPhone === '919385452868' && otp === '123456') {
-      const user: User = {
-        id: '6a50889213f8843577f4e27d', // Valid test customer ID from backend3 database
-        name: 'Test User',
-        phone: formattedPhone,
-        email: 'test@ownbites.com'
-      };
-      this.currentUser.set(user);
-      localStorage.setItem('foodie_customer', JSON.stringify(user));
-      localStorage.setItem('foodie_token', 'mock_token_9385452868');
-      return of({ token: 'mock_token_9385452868', customer: user });
-    }
-
     return this.http.post<{status: string, data: any}>(`${environment.apiUrl}/customer/verify-otp`, {
       phone: formattedPhone,
       otp: otp,
