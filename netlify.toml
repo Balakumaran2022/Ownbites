@@ -2,78 +2,116 @@
   command = "npm run build"
   publish = "dist/food-ordering-app/browser"
 
+# Specific API Proxies to avoid conflicts with Frontend Angular routes
 [[redirects]]
-  from = "/customer/*"
-  to = "https://backend3.owct.me/customer/:splat"
+  from = "/customer/get-addresses"
+  to = "https://backend3.owct.me/customer/get-addresses"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/category/*"
-  to = "https://backend3.owct.me/category/:splat"
+  from = "/customer/create-address"
+  to = "https://backend3.owct.me/customer/create-address"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/product/*"
-  to = "https://backend3.owct.me/product/:splat"
+  from = "/customer/login"
+  to = "https://backend3.owct.me/customer/login"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/cart/*"
-  to = "https://backend3.owct.me/cart/:splat"
+  from = "/customer/verify-otp"
+  to = "https://backend3.owct.me/customer/verify-otp"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/order/*"
-  to = "https://backend3.owct.me/order/:splat"
+  from = "/banner/get-active"
+  to = "https://backend3.owct.me/banner/get-active"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/outlet/*"
-  to = "https://backend3.owct.me/outlet/:splat"
+  from = "/cart/get-cart-details"
+  to = "https://backend3.owct.me/cart/get-cart-details"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/item/*"
-  to = "https://backend3.owct.me/item/:splat"
+  from = "/cart/update"
+  to = "https://backend3.owct.me/cart/update"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/organization/*"
-  to = "https://backend3.owct.me/organization/:splat"
+  from = "/cart/create"
+  to = "https://backend3.owct.me/cart/create"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/banner/*"
-  to = "https://backend3.owct.me/banner/:splat"
+  from = "/category/getCategory"
+  to = "https://backend3.owct.me/category/getCategory"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/discount/*"
-  to = "https://backend3.owct.me/discount/:splat"
+  from = "/discount/get-user-discounts"
+  to = "https://backend3.owct.me/discount/get-user-discounts"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/setting/*"
-  to = "https://backend3.owct.me/setting/:splat"
+  from = "/location/customer-geo-location"
+  to = "https://backend3.owct.me/location/customer-geo-location"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/location/*"
-  to = "https://backend3.owct.me/location/:splat"
+  from = "/location/customer-get-latlng"
+  to = "https://backend3.owct.me/location/customer-get-latlng"
   status = 200
   force = true
 
+[[redirects]]
+  from = "/order/get-all-order-by-customer"
+  to = "https://backend3.owct.me/order/get-all-order-by-customer"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/organization/get-org"
+  to = "https://backend3.owct.me/organization/get-org"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/organization/outlets/get-all"
+  to = "https://backend3.owct.me/organization/outlets/get-all"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/organization/get-store-status/*"
+  to = "https://backend3.owct.me/organization/get-store-status/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/setting/get"
+  to = "https://backend3.owct.me/setting/get"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/item/getItemDetail"
+  to = "https://backend3.owct.me/item/getItemDetail"
+  status = 200
+  force = true
+
+# Fallback: All other routes are served by Angular's index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
