@@ -440,7 +440,20 @@ export class Cart implements OnInit {
   }
 
   isEligible(coupon: any): boolean {
-    return this.subtotal() >= coupon.min;
+    const sub = this.subtotal();
+    if (coupon.code === 'WELCOME50') {
+      return this.isFirstUser();
+    }
+    if (coupon.code === 'FLAT80') {
+      return sub >= 300 && sub < 500;
+    }
+    if (coupon.code === 'TREND100') {
+      return sub >= 500 && sub < 1500;
+    }
+    if (coupon.code === 'FEAST200') {
+      return sub >= 1500;
+    }
+    return sub >= (coupon.min || 0);
   }
 
   applyCoupon(coupon: any) {
@@ -450,7 +463,15 @@ export class Cart implements OnInit {
     }
 
     if (!this.isEligible(coupon)) {
-      alert(`Minimum order value of ₹${coupon.min} required to apply this coupon.`);
+      if (coupon.code === 'FLAT80') {
+        alert('FLAT80 coupon is only eligible for orders between ₹300 and ₹500.');
+      } else if (coupon.code === 'TREND100') {
+        alert('TREND100 coupon is only eligible for orders between ₹500 and ₹1500.');
+      } else if (coupon.code === 'FEAST200') {
+        alert('FEAST200 coupon is only eligible for orders of ₹1500 or more.');
+      } else {
+        alert(`Minimum order value of ₹${coupon.min} required to apply this coupon.`);
+      }
       return;
     }
 
@@ -523,12 +544,10 @@ export class Cart implements OnInit {
   }
 
   recalculateDiscount() {
-    // If a coupon is currently active, recalculate the discount amount or remove if no longer eligible
     const active = this.cartService.selectedCoupon();
     if (active) {
-      const sub = this.subtotal();
-      if (sub < active.min) {
-        // No longer eligible due to quantity reduction
+      if (!this.isEligible(active)) {
+        // No longer eligible due to subtotal range change
         this.removeCoupon();
       } else {
         // Re-apply to update calculation
