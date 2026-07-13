@@ -228,7 +228,8 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     // Clear order history for the user (run once on load)
-    if (!localStorage.getItem('ownbites_orders_clear_time')) {
+    if (!localStorage.getItem('ownbites_orders_clear_time_v3')) {
+      localStorage.setItem('ownbites_orders_clear_time_v3', 'true');
       localStorage.setItem('ownbites_orders_clear_time', Date.now().toString());
       localStorage.removeItem('ownbites_recent_orders');
     }
