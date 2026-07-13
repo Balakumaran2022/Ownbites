@@ -171,8 +171,149 @@ import { Router } from '@angular/router';
         </div>
       </div>
 
-      <!-- Category Cards Grid — 3 per row -->
+      <!-- Best Selling Products Section -->
+      <section class="mt-2">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h2 class="text-2xl md:text-3xl font-black text-secondary tracking-tight">
+              🔥 Best Selling <span class="text-primary">Products</span>
+            </h2>
+            <div class="w-16 h-1 bg-gradient-to-r from-primary to-[#f4811f] rounded-full mt-2"></div>
+            <p class="text-sm text-gray-500 mt-1.5 font-medium">Most loved dishes ordered by our customers</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+
+          <!-- 1. Murugan Idli -->
+          <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col">
+            <div class="relative h-36 overflow-hidden bg-orange-50">
+              <img src="https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400&auto=format&fit=crop&q=80" alt="Murugan Idli" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+              <div class="absolute top-2 left-2 bg-green-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full">#1 Bestseller</div>
+            </div>
+            <div class="p-3 flex-1 flex flex-col">
+              <span class="text-lg">🥣</span>
+              <h3 class="font-extrabold text-gray-900 text-sm mt-0.5">Murugan Idli</h3>
+              <p class="text-gray-400 text-[11px] mt-1 line-clamp-2 leading-relaxed">Soft, fluffy idlis served with sambar and chutneys. A timeless South Indian classic.</p>
+            </div>
+          </div>
+
+          <!-- 2. Crispy Masala Dosa -->
+          <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col">
+            <div class="relative h-36 overflow-hidden bg-orange-50">
+              <img src="https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=400&auto=format&fit=crop&q=80" alt="Crispy Masala Dosa" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+              <div class="absolute top-2 left-2 bg-orange-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full">#2 Bestseller</div>
+            </div>
+            <div class="p-3 flex-1 flex flex-col">
+              <span class="text-lg">🫓</span>
+              <h3 class="font-extrabold text-gray-900 text-sm mt-0.5">Crispy Masala Dosa</h3>
+              <p class="text-gray-400 text-[11px] mt-1 line-clamp-2 leading-relaxed">Golden crispy crepe filled with spiced potato masala. A crowd favourite.</p>
+            </div>
+          </div>
+
+          <!-- 3. Cheese Burst Veg Burger -->
+          <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col">
+            <div class="relative h-36 overflow-hidden bg-orange-50">
+              <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&auto=format&fit=crop&q=80" alt="Cheese Burst Veg Burger" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+              <div class="absolute top-2 left-2 bg-orange-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full">#3 Bestseller</div>
+            </div>
+            <div class="p-3 flex-1 flex flex-col">
+              <span class="text-lg">🍔</span>
+              <h3 class="font-extrabold text-gray-900 text-sm mt-0.5">Cheese Burst Burger</h3>
+              <p class="text-gray-400 text-[11px] mt-1 line-clamp-2 leading-relaxed">Loaded with melted cheese and fresh veggies. Top pick among younger audiences.</p>
+            </div>
+          </div>
+
+          <!-- 4. Butter Naan -->
+          <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col">
+            <div class="relative h-36 overflow-hidden bg-orange-50">
+              <img src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&auto=format&fit=crop&q=80" alt="Butter Naan" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+            </div>
+            <div class="p-3 flex-1 flex flex-col">
+              <span class="text-lg">🍞</span>
+              <h3 class="font-extrabold text-gray-900 text-sm mt-0.5">Butter Naan</h3>
+              <p class="text-gray-400 text-[11px] mt-1 line-clamp-2 leading-relaxed">Soft, buttery leavened bread. Most ordered bread item on the platform.</p>
+            </div>
+          </div>
+
+          <!-- 5. Carrot Halwa -->
+          <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col">
+            <div class="relative h-36 overflow-hidden bg-orange-50">
+              <img src="https://images.unsplash.com/photo-1605197161470-5d8eb3b34e78?w=400&auto=format&fit=crop&q=80" alt="Carrot Halwa" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+            </div>
+            <div class="p-3 flex-1 flex flex-col">
+              <span class="text-lg">🍮</span>
+              <h3 class="font-extrabold text-gray-900 text-sm mt-0.5">Carrot Halwa</h3>
+              <p class="text-gray-400 text-[11px] mt-1 line-clamp-2 leading-relaxed">Rich slow-cooked carrot dessert with ghee, sugar & cardamom. Best-selling sweet.</p>
+            </div>
+          </div>
+
+          <!-- 6. Choco Passion Dessert -->
+          <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col">
+            <div class="relative h-36 overflow-hidden bg-orange-50">
+              <img src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=400&auto=format&fit=crop&q=80" alt="Choco Passion Dessert" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+            </div>
+            <div class="p-3 flex-1 flex flex-col">
+              <span class="text-lg">🍫</span>
+              <h3 class="font-extrabold text-gray-900 text-sm mt-0.5">Choco Passion</h3>
+              <p class="text-gray-400 text-[11px] mt-1 line-clamp-2 leading-relaxed">Decadent chocolate indulgence. Top-trending dessert on the platform.</p>
+            </div>
+          </div>
+
+          <!-- 7. South Indian Meals -->
+          <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col">
+            <div class="relative h-36 overflow-hidden bg-orange-50">
+              <img src="https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400&auto=format&fit=crop&q=80" alt="South Indian Meals" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+            </div>
+            <div class="p-3 flex-1 flex flex-col">
+              <span class="text-lg">🍱</span>
+              <h3 class="font-extrabold text-gray-900 text-sm mt-0.5">South Indian Meals</h3>
+              <p class="text-gray-400 text-[11px] mt-1 line-clamp-2 leading-relaxed">Full balanced thali with rice, sambar, rasam, curries & papad.</p>
+            </div>
+          </div>
+
+          <!-- 8. Fresh Juice -->
+          <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col">
+            <div class="relative h-36 overflow-hidden bg-orange-50">
+              <img src="https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400&auto=format&fit=crop&q=80" alt="Fresh Juice" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+            </div>
+            <div class="p-3 flex-1 flex flex-col">
+              <span class="text-lg">🥤</span>
+              <h3 class="font-extrabold text-gray-900 text-sm mt-0.5">Fresh Juice</h3>
+              <p class="text-gray-400 text-[11px] mt-1 line-clamp-2 leading-relaxed">Cold-pressed seasonal fruit juices. High reorder rate, especially in summer.</p>
+            </div>
+          </div>
+
+          <!-- 9. Pongal -->
+          <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col">
+            <div class="relative h-36 overflow-hidden bg-orange-50">
+              <img src="https://images.unsplash.com/photo-1547592180-85f173990554?w=400&auto=format&fit=crop&q=80" alt="Pongal" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+            </div>
+            <div class="p-3 flex-1 flex flex-col">
+              <span class="text-lg">🍳</span>
+              <h3 class="font-extrabold text-gray-900 text-sm mt-0.5">Pongal</h3>
+              <p class="text-gray-400 text-[11px] mt-1 line-clamp-2 leading-relaxed">Comforting rice and lentil dish with black pepper and ghee. Popular morning snack.</p>
+            </div>
+          </div>
+
+          <!-- 10. Medu Vada -->
+          <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group flex flex-col">
+            <div class="relative h-36 overflow-hidden bg-orange-50">
+              <img src="https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&auto=format&fit=crop&q=80" alt="Medu Vada" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+            </div>
+            <div class="p-3 flex-1 flex flex-col">
+              <span class="text-lg">🥞</span>
+              <h3 class="font-extrabold text-gray-900 text-sm mt-0.5">Medu Vada</h3>
+              <p class="text-gray-400 text-[11px] mt-1 line-clamp-2 leading-relaxed">Crispy lentil doughnuts with sambar & coconut chutney. A breakfast staple.</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Explore Our Curated Menu Section -->
       <div>
+
         <!-- Skeleton -->
         <ng-container *ngIf="loadingMenu()">
           <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
