@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product';
 import { CartService } from '../../services/cart';
 import { CategoryService } from '../../services/category';
@@ -13,7 +14,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule, SkeletonLoader],
+  imports: [CommonModule, RouterLink, MatIconModule, SkeletonLoader, FormsModule],
   template: `
     <div class="min-h-fit pb-12 bg-[#FAF9F6]">
 
@@ -23,19 +24,31 @@ import { environment } from '../../../environments/environment';
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             
             <!-- Left Side: Back + Title -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
               <button routerLink="/"
                       class="w-10 h-10 rounded-full bg-white/25 hover:bg-white/35 flex items-center justify-center transition-all hover:scale-105 shrink-0"
                       title="Back to Home">
                 <mat-icon class="text-white">arrow_back</mat-icon>
               </button>
-              <div class="min-w-0">
+              <div class="min-w-0 flex-1">
                 <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight truncate">
                   {{categoryName() || 'All Items'}}
                 </h1>
                 <p class="text-white/85 text-xs sm:text-sm mt-0.5 font-medium">
                   {{products().length}} item{{products().length !== 1 ? 's' : ''}} available
                 </p>
+              </div>
+            </div>
+
+            <!-- Middle: Dynamic Search Bar -->
+            <div class="w-full sm:max-w-xs relative shrink-0">
+              <div class="flex items-center bg-white/10 rounded-full p-1.5 px-3.5 border border-white/20 focus-within:bg-white focus-within:border-white focus-within:ring-4 focus-within:ring-white/10 focus-within:text-gray-800 transition-all duration-300">
+                <mat-icon class="shrink-0" style="font-size:18px;width:18px;height:18px;">search</mat-icon>
+                <input [value]="searchVal()" 
+                       (input)="onSearchChange($any($event.target).value)"
+                       type="text" 
+                       placeholder="Search within items..." 
+                       class="w-full bg-transparent border-none focus:outline-none focus:ring-0 placeholder-white/70 text-xs font-semibold focus-within:placeholder-gray-400 focus-within:text-gray-800 ml-2">
               </div>
             </div>
 
@@ -132,10 +145,11 @@ import { environment } from '../../../environments/environment';
 
             <!-- Info -->
             <div class="flex-1 flex flex-col p-3">
-              <h3 class="font-extrabold text-gray-900 text-sm line-clamp-1" [routerLink]="['/product', product.id]">
-                {{product.name}}
+              <h3 class="font-extrabold text-gray-900 text-sm line-clamp-1 cursor-pointer hover:text-primary transition-colors" [routerLink]="['/product', product.id]"
+                  [innerHTML]="highlightKeyword(product.name, searchVal())">
               </h3>
-              <p class="text-gray-400 text-[11px] mt-1 line-clamp-2 leading-relaxed flex-grow">{{product.description}}</p>
+              <p class="text-gray-400 text-[11px] mt-1 line-clamp-2 leading-relaxed flex-grow"
+                 [innerHTML]="highlightKeyword(product.description || '', searchVal())"></p>
 
               <!-- Price + Add -->
               <div class="flex items-center justify-between mt-3">
@@ -183,6 +197,8 @@ export class Products implements OnInit {
   categoryName   = signal<string>('');
   offerText      = signal<string>('');
   categoryImage  = signal<string>('');
+  searchVal      = signal<string>('');
+  private searchTimeout: any = null;
 
   queryParams = toSignal(this.route.queryParams);
 
@@ -192,12 +208,14 @@ export class Products implements OnInit {
     if (!params) return list;
 
     const cat    = params['category'];
-    const search = params['search'];
+    const search = this.searchVal();
 
     if (cat)    list = list.filter(p => p.categoryId === cat);
     if (search) {
-      const q = search.toLowerCase();
-      list = list.filter(p => p.name.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q));
+      const q = search.toLowerCase().trim();
+      const escaped = q.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const regex = new RegExp('\\b' + escaped, 'i');
+      list = list.filter(p => regex.test(p.name) || (p.description && regex.test(p.description)));
     }
 
     const diet = this.dietaryFilter();
@@ -218,12 +236,14 @@ export class Products implements OnInit {
       this.loading.set(false);
     });
 
-    // Resolve category name, offer, and diet from query param
+    // Resolve category name, offer, search and diet from query param
     this.route.queryParams.subscribe(params => {
       const catId = params['category'];
       const offer = params['offer'];
       const diet  = params['diet'];
+      const search = params['search'] || '';
       
+      this.searchVal.set(search);
       this.offerText.set(offer || '');
       if (diet === 'veg' || diet === 'non-veg') {
         this.dietaryFilter.set(diet);
@@ -248,6 +268,26 @@ export class Products implements OnInit {
   togglePriceSort() {
     const c = this.priceSort();
     this.priceSort.set(c === 'none' ? 'asc' : c === 'asc' ? 'desc' : 'none');
+  }
+
+  onSearchChange(val: string) {
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+    
+    // Set small loading delay to give instant visual feedback of the debounce
+    this.loading.set(true);
+    this.searchTimeout = setTimeout(() => {
+      this.searchVal.set(val.trim());
+      this.loading.set(false);
+    }, 300);
+  }
+
+  highlightKeyword(text: string, query: string): string {
+    if (!query || !text) return text;
+    const escaped = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(`(${escaped})`, 'gi');
+    return text.replace(regex, '<mark style="background-color: #fef08a; color: #854d0e; padding: 0px 2px; border-radius: 4px; font-weight: bold;">$1</mark>');
   }
 
   toggleDietary(type: 'veg' | 'non-veg') {

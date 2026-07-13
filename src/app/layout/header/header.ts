@@ -20,25 +20,19 @@ import { OrganizationService } from '../../services/organization';
         
         <div class="flex items-center gap-2 cursor-pointer" routerLink="/">
           <div class="w-10 h-10 rounded-xl overflow-hidden shadow-luxury hover:scale-105 transition-transform border border-gray-100 bg-white flex items-center justify-center">
-            <img [src]="orgService.org().logoUrl" [alt]="orgService.org().name" class="w-full h-full object-contain p-0.5" />
+            <img [src]="orgService.org().logoUrl" [alt]="orgService.org().name" class="w-full h-full object-cover" />
           </div>
           <span class="text-xl font-bold tracking-tight text-secondary hidden sm:block">{{orgService.org().name}}</span>
         </div>
 
         <div class="flex items-center gap-4 hidden md:flex">
-          <!-- Outlet Selector (Desktop) -->
+          <!-- Location Selector (Desktop) -->
           <div (click)="changeAddress.emit()" class="flex items-center gap-2 hover:bg-gray-100 px-3 py-2 rounded-lg cursor-pointer transition-colors border-r border-gray-200 pr-5">
             <mat-icon class="text-primary">location_on</mat-icon>
             <div class="flex flex-col">
-              <span class="text-xs font-semibold text-gray-500 uppercase">{{(orderService.orderType() === 'Pickup' || orderService.orderType() === 'Takeaway') ? 'Pickup from' : 'Deliver to'}}</span>
-              <ng-container *ngIf="orderService.orderType() !== 'Pickup' && orderService.orderType() !== 'Takeaway'; else otherTypes">
-                <span class="text-sm font-medium text-secondary truncate max-w-[150px]" *ngIf="addressService.currentAddress() as addr">{{addr.type}} - {{addr.street}}</span>
-                <span class="text-sm font-medium text-secondary truncate max-w-[150px]" *ngIf="!addressService.currentAddress()">Select Address</span>
-              </ng-container>
-              <ng-template #otherTypes>
-                <span class="text-sm font-medium text-secondary truncate max-w-[150px]" *ngIf="outletService.selectedOutlet() as out">{{out.name}}</span>
-                <span class="text-sm font-medium text-gray-400 truncate max-w-[150px]" *ngIf="!outletService.selectedOutlet()">Select Store</span>
-              </ng-template>
+              <span class="text-xs font-semibold text-gray-500 uppercase">Your Location</span>
+              <span class="text-sm font-medium text-secondary truncate max-w-[150px]" *ngIf="addressService.currentAddress() as addr">{{addr.type}} - {{addr.street}}</span>
+              <span class="text-sm font-medium text-secondary truncate max-w-[150px]" *ngIf="!addressService.currentAddress()">Select Location</span>
             </div>
             <mat-icon class="text-gray-400">expand_more</mat-icon>
           </div>
@@ -46,7 +40,7 @@ import { OrganizationService } from '../../services/organization';
           <!-- Order Type Selector (Desktop) -->
           <div (click)="changeOrderType.emit()" class="flex items-center gap-2 hover:bg-gray-100 px-3 py-2 rounded-lg cursor-pointer transition-colors">
             <mat-icon class="text-primary">
-              {{orderService.orderType() === 'Pickup' ? 'storefront' : (orderService.orderType() === 'Takeaway' ? 'takeout_dining' : 'list_alt')}}
+              {{orderService.orderType() === 'Door Delivery' ? 'delivery_dining' : (orderService.orderType() === 'Self Pickup' ? 'storefront' : 'list_alt')}}
             </mat-icon>
             <div class="flex flex-col">
               <span class="text-xs font-semibold text-gray-500 uppercase">Order Type</span>

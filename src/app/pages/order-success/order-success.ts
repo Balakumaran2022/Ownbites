@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, AfterViewInit, signal, ElementRef, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -165,9 +165,9 @@ import { OrganizationService } from '../../services/organization';
 
         <!-- header -->
         <div style="text-align:center;margin-bottom:10px;">
-          <div style="font-size:18px;font-weight:700;letter-spacing:4px;color:#111;">🍽 OWNBITES</div>
+          <div style="font-size:18px;font-weight:700;letter-spacing:4px;color:#111;">🍽 {{orgService.org().name.toUpperCase()}}</div>
           <div style="font-size:9px;color:#9ca3af;letter-spacing:2px;margin-top:2px;">FOOD DELIVERY &amp; PICKUP</div>
-          <div style="font-size:9px;color:#d1d5db;margin-top:1px;">Thiruvarur, Tamil Nadu, India</div>
+          <div style="font-size:9px;color:#d1d5db;margin-top:1px;">{{orgService.org().city}}, India</div>
         </div>
 
         <hr class="rdash">
@@ -194,7 +194,9 @@ import { OrganizationService } from '../../services/organization';
           </div>
           <div style="display:flex;justify-content:space-between;" *ngIf="order()?.customerName">
             <span style="color:#9ca3af;">CUSTOMER</span>
-            <span style="font-weight:700;color:#111;">{{order()?.customerName}}</span>
+            <span style="font-weight:700;color:#111;">
+              {{order()?.customerName}} {{order()?.customerPhone ? '('+order()?.customerPhone+')' : ''}}
+            </span>
           </div>
         </div>
 
@@ -231,9 +233,12 @@ import { OrganizationService } from '../../services/organization';
             <span style="font-weight:700;">₹{{order()?.subtotal | number:'1.2-2'}}</span>
           </div>
           <div *ngIf="(order()?.discount||0)>0"
-            style="display:flex;justify-content:space-between;color:#16a34a;font-weight:700;">
-            <span>Discount {{order()?.couponCode ? '('+order()?.couponCode+')' : ''}}</span>
-            <span>-₹{{order()?.discount | number:'1.2-2'}}</span>
+            style="color:#16a34a;font-weight:700;">
+            <div style="display:flex;justify-content:space-between;">
+              <span>Discount {{order()?.couponCode ? '('+order()?.couponCode+')' : ''}}</span>
+              <span>-₹{{order()?.discount | number:'1.2-2'}}</span>
+            </div>
+            <div style="font-size:8px;font-weight:bold;margin-top:1px;">*valid only 4 days</div>
           </div>
           <div *ngIf="(order()?.taxes||0)>0" style="display:flex;justify-content:space-between;">
             <span>GST &amp; Taxes</span>
@@ -265,8 +270,14 @@ import { OrganizationService } from '../../services/organization';
         <!-- footer -->
         <div style="text-align:center;margin-top:6px;">
           <hr class="rdash">
+          <div *ngIf="order()?.couponCode" style="font-size:9.5px;color:#16a34a;font-weight:800;margin-bottom:6px;">
+            Applied Coupon Code: {{order()?.couponCode}}
+          </div>
           <div style="font-size:9px;color:#111;font-weight:700;">Thank you for ordering with {{orgService.org().name}}!</div>
           <div style="font-size:9px;color:#111;">support&#64;{{orgService.org().name.toLowerCase()}}.in</div>
+          <div *ngIf="order()?.orderType === 'Self Pickup'" style="font-size:10px;color:#b45309;font-weight:800;margin-top:6px;padding:4px;border:1px dashed #b45309;border-radius:4px;display:inline-block;">
+            ⚠️ 30 MINS VALID PICKUP
+          </div>
           <!-- barcode -->
           <div style="display:flex;justify-content:center;gap:1px;margin:8px 0 3px;">
             <div *ngFor="let b of barcodeLines"
@@ -323,105 +334,18 @@ import { OrganizationService } from '../../services/organization';
         </div>
       </div>
     </div>
-
-    <!-- ═══════════════════════════════
-         STEP 2 — SCRATCH CARD REWARD
-    ═══════════════════════════════ -->
-    <div class="scratch-card-wrap no-print w-full">
-
-      <!-- Margin Spacer -->
-      <div class="mt-8"></div>
-
-      <!-- Scratchable card -->
-      <div *ngIf="!scratchRevealed()"
-        style="background:linear-gradient(135deg,#1c1917,#292524);border-radius:20px;
-          padding:20px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.3);">
-
-        <div style="font-size:11px;font-weight:800;letter-spacing:2px;color:#a16207;margin-bottom:6px;">🎁 YOU EARNED A REWARD</div>
-        <div style="font-size:13px;font-weight:700;color:#d4d4d4;margin-bottom:16px;">Scratch to reveal your next order coupon!</div>
-
-        <!-- Scratch canvas container -->
-        <div style="position:relative;width:100%;height:120px;border-radius:14px;overflow:hidden;margin-bottom:12px;"
-          (mousedown)="startScratch($event)" (mousemove)="doScratch($event)" (mouseup)="stopScratch()"
-          (touchstart)="startScratch($event)" (touchmove)="doScratch($event)" (touchend)="stopScratch()">
-
-          <!-- Prize underneath -->
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;
-            align-items:center;justify-content:center;
-            background:linear-gradient(135deg,#fef9c3,#fef3c7);">
-            <div style="font-size:32px;font-weight:900;color:#d97706;letter-spacing:-1px;">₹20 OFF</div>
-            <div style="font-size:12px;font-weight:700;color:#92400e;margin-top:5px;">Code: {{ scratchCouponCode() }}</div>
-            <div style="font-size:9px;color:#b45309;margin-top:2px;">Valid for 7 days · Next order</div>
-          </div>
-
-          <!-- Canvas scratch layer (full width) -->
-          <canvas #scratchCanvas
-            [width]="scratchWidth"
-            height="120"
-            style="position:absolute;inset:0;width:100%;height:100%;border-radius:14px;cursor:crosshair;touch-action:none;"></canvas>
-        </div>
-
-        <div style="font-size:11px;color:#78716c;">✋ Scratch with finger or mouse to reveal</div>
-      </div>
-
-      <!-- Revealed state -->
-      <div class="reveal-pop" *ngIf="scratchRevealed()"
-        style="background:linear-gradient(135deg,#fef9c3,#fef3c7);border-radius:20px;
-          padding:24px 20px;text-align:center;border:2px dashed #d97706;
-          box-shadow:0 8px 32px rgba(217,119,6,.25);">
-        <div style="font-size:14px;font-weight:800;color:#92400e;margin-bottom:8px;">🎉 Congratulations!</div>
-        <div style="font-size:36px;font-weight:900;color:#d97706;letter-spacing:-1px;margin-bottom:12px;">₹20 OFF</div>
-
-        <!-- Coupon code + Copy button -->
-        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;">
-          <div style="background:#d97706;color:#fff;font-weight:900;
-            font-size:15px;letter-spacing:3px;padding:8px 18px;border-radius:10px;">{{ scratchCouponCode() }}</div>
-          <button (click)="copyCoupon()"
-            style="width:38px;height:38px;border-radius:10px;border:2px solid #d97706;
-              background:couponCopied() ? '#d97706' : '#fff';
-              color:couponCopied() ? '#fff' : '#d97706';
-              display:flex;align-items:center;justify-content:center;
-              cursor:pointer;transition:all .2s;flex-shrink:0;"
-            [style.background]="couponCopied() ? '#d97706' : '#fff'"
-            [style.color]="couponCopied() ? '#fff' : '#d97706'">
-            <mat-icon style="font-size:18px;width:18px;height:18px;">
-              {{couponCopied() ? 'check' : 'content_copy'}}
-            </mat-icon>
-          </button>
-        </div>
-        <div *ngIf="couponCopied()" style="font-size:11px;color:#16a34a;font-weight:700;margin-bottom:8px;">✅ Copied!</div>
-
-        <div style="font-size:12px;color:#92400e;font-weight:600;line-height:1.6;">
-          Use this code at checkout for ₹20 off!<br>
-          <span style="color:#b45309;font-size:11px;">Valid for 7 days from now</span>
-        </div>
-      </div>
-    </div>
-
   </div>
 </div>
   `
 })
-export class OrderSuccess implements OnInit, AfterViewInit {
+export class OrderSuccess implements OnInit {
   private route  = inject(ActivatedRoute);
   private router = inject(Router);
   orgService     = inject(OrganizationService);
 
-  @ViewChild('scratchCanvas') scratchCanvasRef!: ElementRef<HTMLCanvasElement>;
-
   order          = signal<any>(null);
   printing       = signal(true);
-  scratchRevealed = signal(false);
-  couponCopied   = signal(false);
-  scratchCouponCode = signal<string>('SCRATCH20');
   barcodeLines: { w: number; c: string }[] = [];
-
-  // Scratch card internal state
-  private scratchCtx: CanvasRenderingContext2D | null = null;
-  private isScratching = false;
-  private scratchInitDone = false;
-  scratchWidth = 340;   // updated dynamically after view init
-  private readonly SCRATCH_KEY = 'ownbites_scratch_coupon';
 
   ngOnInit() {
     this.barcodeLines = Array.from({ length: 52 }, () => ({
@@ -435,162 +359,9 @@ export class OrderSuccess implements OnInit, AfterViewInit {
     } catch { /* ignore */ }
 
     setTimeout(() => this.printing.set(false), 2200);
-
-    // Check if already revealed (don't show card again)
-    const existing = localStorage.getItem(this.SCRATCH_KEY);
-    if (existing) {
-      try {
-        const sc = JSON.parse(existing);
-        if (sc.revealed) {
-          this.scratchRevealed.set(true);
-          this.scratchCouponCode.set(sc.code || 'SCRATCH20');
-        } else {
-          // If not revealed, keep the pre-generated code
-          this.scratchCouponCode.set(sc.code || 'SCRATCH20');
-        }
-      } catch { /* ignore */ }
-    } else {
-      // Pre-create the unrevealed coupon associated with this order
-      try {
-        const orderVal = this.order();
-        const orderId = orderVal?.orderId || orderVal?._id || orderVal?.id;
-        if (orderId) {
-          const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-          const uniqueCode = 'OB20-' + rand;
-          this.scratchCouponCode.set(uniqueCode);
-
-          const coupon = {
-            code:     uniqueCode,
-            amount:   20,
-            revealed: false,
-            expiry:   Date.now() + 7 * 24 * 60 * 60 * 1000,
-            orderId:  orderId
-          };
-          localStorage.setItem(this.SCRATCH_KEY, JSON.stringify(coupon));
-        }
-      } catch { /* ignore */ }
-    }
   }
 
-  ngAfterViewInit() {
-    // Init canvas after a delay matching the card animation
-    setTimeout(() => this.initScratchCanvas(), 3800);
-  }
 
-  private initScratchCanvas() {
-    if (this.scratchRevealed() || this.scratchInitDone) return;
-    const canvas = this.scratchCanvasRef?.nativeElement;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    this.scratchCtx = ctx;
-    this.scratchInitDone = true;
-
-    // Size canvas to match its CSS container (full width)
-    const containerW = canvas.parentElement?.clientWidth || 340;
-    this.scratchWidth = containerW;
-    canvas.width  = containerW;
-    canvas.height = 120;
-
-    // Draw gold shimmer cover
-    const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-    grad.addColorStop(0,   '#b45309');
-    grad.addColorStop(0.3, '#d97706');
-    grad.addColorStop(0.5, '#fbbf24');
-    grad.addColorStop(0.7, '#d97706');
-    grad.addColorStop(1,   '#b45309');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Scratch hint text
-    ctx.fillStyle = 'rgba(255,255,255,0.45)';
-    ctx.font = 'bold 15px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('✦ SCRATCH HERE ✦', canvas.width / 2, canvas.height / 2);
-  }
-
-  // ─── Scratch event handlers ──────────────────────────────────────
-  startScratch(e: MouseEvent | TouchEvent) {
-    this.isScratching = true;
-    this.eraseScratch(e);
-  }
-  doScratch(e: MouseEvent | TouchEvent) {
-    if (!this.isScratching) return;
-    this.eraseScratch(e);
-  }
-  stopScratch() {
-    this.isScratching = false;
-    this.checkReveal();
-  }
-
-  private eraseScratch(e: MouseEvent | TouchEvent) {
-    const ctx = this.scratchCtx;
-    const canvas = this.scratchCanvasRef?.nativeElement;
-    if (!ctx || !canvas) return;
-    e.preventDefault();
-
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width  / rect.width;
-    const scaleY = canvas.height / rect.height;
-
-    let clientX: number, clientY: number;
-    if (e instanceof MouseEvent) {
-      clientX = e.clientX; clientY = e.clientY;
-    } else {
-      clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
-    }
-
-    const x = (clientX - rect.left) * scaleX;
-    const y = (clientY - rect.top)  * scaleY;
-
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath();
-    ctx.arc(x, y, 22, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  private checkReveal() {
-    const canvas = this.scratchCanvasRef?.nativeElement;
-    const ctx = this.scratchCtx;
-    if (!canvas || !ctx) return;
-
-    // Sample pixel transparency to calculate scratched %
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const pixels = imageData.data;
-    let transparent = 0;
-    for (let i = 3; i < pixels.length; i += 4) {
-      if (pixels[i] < 128) transparent++;
-    }
-    const total = pixels.length / 4;
-    const pct   = (transparent / total) * 100;
-
-    if (pct >= 55) {
-      this.reveal();
-    }
-  }
-
-  private reveal() {
-    if (this.scratchRevealed()) return;
-
-    // Clear entire canvas to show prize
-    const ctx = this.scratchCtx;
-    const canvas = this.scratchCanvasRef?.nativeElement;
-    if (ctx && canvas) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    // Save coupon as revealed in localStorage
-    try {
-      const existing = localStorage.getItem(this.SCRATCH_KEY);
-      if (existing) {
-        const sc = JSON.parse(existing);
-        sc.revealed = true;
-        localStorage.setItem(this.SCRATCH_KEY, JSON.stringify(sc));
-      }
-    } catch { /* ignore */ }
-
-    setTimeout(() => this.scratchRevealed.set(true), 400);
-  }
 
   downloadReceipt() {
     const o = this.order();
@@ -605,7 +376,7 @@ export class OrderSuccess implements OnInit, AfterViewInit {
     ).join('');
 
     const discRow = (o.discount || 0) > 0
-      ? `<tr><td>Discount${o.couponCode ? ' ('+o.couponCode+')' : ''}</td><td></td>
+      ? `<tr><td>Discount${o.couponCode ? ' ('+o.couponCode+')' : ''}<br><span style="font-size:8px;color:#16a34a;">*valid only 4 days</span></td><td></td>
            <td style="text-align:right;color:#16a34a;">-₹${Number(o.discount).toFixed(2)}</td></tr>` : '';
     const delRow  = (o.deliveryCharge || 0) > 0
       ? `<tr><td>Delivery</td><td></td>
@@ -637,7 +408,7 @@ export class OrderSuccess implements OnInit, AfterViewInit {
     <tr><td class="lbl">DATE</td><td class="val">${new Date(o.createdAt).toLocaleString('en-IN')}</td></tr>
     <tr><td class="lbl">TYPE</td><td class="val">${(o.orderType||'Delivery').toUpperCase()}</td></tr>
     <tr><td class="lbl">PAYMENT</td><td class="val">${(o.paymentMode||'COD').toUpperCase()}</td></tr>
-    ${o.customerName?`<tr><td class="lbl">CUSTOMER</td><td class="val">${o.customerName}</td></tr>`:''}
+    ${o.customerName?`<tr><td class="lbl">CUSTOMER</td><td class="val">${o.customerName}${o.customerPhone ? ' ('+o.customerPhone+')' : ''}</td></tr>`:''}
   </table><hr>
   <table>
     <tr style="font-size:9px;color:#111;">
@@ -652,8 +423,10 @@ export class OrderSuccess implements OnInit, AfterViewInit {
   </table>
   ${o.address?`<hr><div style="font-size:9px;color:#111;"><b>DELIVERY TO:</b><br>${o.address}</div>`:''}
   <div class="footer"><hr>
+    ${o.couponCode ? `<p style="color:#16a34a;font-weight:bold;font-size:10px;margin-bottom:6px;">Applied Coupon Code: ${o.couponCode}</p>` : ''}
     <p><b>Thank you for ordering with ${this.orgService.org().name}!</b></p>
     <p>support@${this.orgService.org().name.toLowerCase()}.in</p>
+    ${o.orderType === 'Self Pickup' ? `<p style="margin-top:6px;color:#b45309;font-weight:bold;font-size:9px;border:1px dashed #b45309;padding:4px;">⚠️ 30 MINS VALID PICKUP</p>` : ''}
     <p style="margin-top:6px;letter-spacing:2px;font-size:8px;">${o.orderId||''}</p>
   </div>
 </div></body></html>`;
@@ -663,15 +436,5 @@ export class OrderSuccess implements OnInit, AfterViewInit {
     a.download = `${this.orgService.org().name}_Receipt_${o.orderId || Date.now()}.html`;
     document.body.appendChild(a); a.click();
     document.body.removeChild(a);
-  }
-
-  copyCoupon() {
-    navigator.clipboard.writeText(this.scratchCouponCode()).then(() => {
-      this.couponCopied.set(true);
-      try {
-        localStorage.setItem('ownbites_copied_coupon', this.scratchCouponCode());
-      } catch { /* ignore */ }
-      setTimeout(() => this.couponCopied.set(false), 2000);
-    });
   }
 }

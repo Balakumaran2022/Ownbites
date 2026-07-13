@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CustomerService } from '../../../services/customer';
 import { UiButton } from '../ui-button/ui-button';
+import { OrganizationService } from '../../../services/organization';
 
 @Component({
   selector: 'app-login-modal',
@@ -17,14 +18,12 @@ import { UiButton } from '../ui-button/ui-button';
           <!-- Logo -->
           <div class="relative mb-6 group">
             <div class="absolute inset-0 bg-orange-400 blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-300 rounded-full"></div>
-            <div class="w-24 h-24 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30 overflow-hidden relative z-10 border border-orange-300/50 transform group-hover:scale-105 transition-transform duration-300">
-               <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-               </svg>
-            </div>
+             <div class="w-24 h-24 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30 overflow-hidden relative z-10 border border-orange-300/50 transform group-hover:scale-105 transition-transform duration-300 bg-white">
+                <img [src]="orgService.org().logoUrl" [alt]="orgService.org().name" class="w-full h-full object-cover" />
+             </div>
           </div>
           
-          <h1 class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 font-extrabold text-2xl mb-1 tracking-tight">OwnBites</h1>
+          <h1 class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 font-extrabold text-2xl mb-1 tracking-tight">{{orgService.org().name}}</h1>
           <h2 class="text-3xl font-extrabold text-gray-900 mb-3 tracking-tight">Welcome Back!</h2>
           <p class="text-gray-500 mb-10 font-medium text-center">Enter your WhatsApp number to continue</p>
         </div>
@@ -133,6 +132,7 @@ export class LoginModalComponent {
   @Output() close = new EventEmitter<void>();
   
   customerService = inject(CustomerService);
+  orgService = inject(OrganizationService);
   
   step = signal<'phone' | 'otp'>('phone');
   phone = signal('');

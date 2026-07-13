@@ -19,17 +19,21 @@ import { Router } from '@angular/router';
   template: `
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-6">
       <!-- Hero Banner -->
-      <section class="relative rounded-2xl overflow-hidden h-64 md:h-80 shadow-luxury group">
-        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&auto=format&fit=crop&q=80" alt="Delicious Food" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-        <div class="absolute inset-0 bg-black/40 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-6 md:p-8">
+      <section class="relative rounded-2xl h-64 md:h-80 shadow-luxury group">
+        <div class="absolute inset-0 rounded-2xl overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&auto=format&fit=crop&q=80" alt="Delicious Food" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+        </div>
+        <div class="absolute inset-0 bg-black/40 bg-gradient-to-t from-black/90 via-black/30 to-transparent rounded-2xl flex flex-col justify-end p-6 md:p-8 z-30">
           <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-2 drop-shadow-md tracking-tight leading-tight">
             Craving Something <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#f4811f] font-extrabold">Special?</span>
           </h1>
-          <div class="max-w-xl w-full mt-4">
+          <div class="max-w-xl w-full mt-4 relative">
             <div class="flex items-center bg-white/95 backdrop-blur-md rounded-full p-1.5 shadow-luxury-hover border border-white/20 focus-within:ring-4 focus-within:ring-[#f4811f]/20 transition-all duration-300">
               <div class="flex-1 flex items-center pl-4 gap-2.5">
                 <mat-icon class="text-[#f4811f]" style="font-size:20px;width:20px;height:20px;">search</mat-icon>
-                <input #searchInput (keyup.enter)="onSearch(searchInput.value)" 
+                <input #searchInput 
+                       (input)="onSearchInput(searchInput.value)"
+                       (keyup.enter)="onSearch(searchInput.value)" 
                        type="text" 
                        placeholder="Search for delicious food..." 
                        class="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-gray-800 placeholder-gray-400 text-sm font-semibold">
@@ -39,6 +43,49 @@ import { Router } from '@angular/router';
                 <span>Search</span>
                 <mat-icon style="font-size:14px;width:14px;height:14px;">arrow_forward</mat-icon>
               </button>
+            </div>
+
+            <!-- Dynamic Search Dropdown Overlay -->
+            <div *ngIf="searchQuery().trim().length > 0" 
+                 class="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100/80 z-50 overflow-hidden max-h-80 flex flex-col">
+              
+              <!-- Loading state -->
+              <div *ngIf="searchLoading()" class="p-6 flex flex-col items-center justify-center gap-2">
+                <div class="w-8 h-8 border-4 border-orange-100 border-t-primary rounded-full animate-spin"></div>
+                <span class="text-xs text-gray-500 font-bold">Searching...</span>
+              </div>
+
+              <!-- No Results -->
+              <div *ngIf="!searchLoading() && searchResults().length === 0" class="p-8 text-center flex flex-col items-center gap-2">
+                <mat-icon class="text-gray-300" style="font-size: 32px; width: 32px; height: 32px;">search_off</mat-icon>
+                <h4 class="text-sm font-bold text-gray-700">No results found</h4>
+                <p class="text-xs text-gray-400">We couldn't find anything matching "{{ searchQuery() }}"</p>
+              </div>
+
+              <!-- Results List -->
+              <div *ngIf="!searchLoading() && searchResults().length > 0" class="overflow-y-auto divide-y divide-gray-50 p-2 space-y-1">
+                <div *ngFor="let product of searchResults()" 
+                     [routerLink]="['/product', product.id]"
+                     class="flex items-center justify-between p-2.5 rounded-xl hover:bg-orange-50/50 transition-colors cursor-pointer group">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <img [src]="product.imageUrl" 
+                         [alt]="product.name" 
+                         class="w-10 h-10 rounded-lg object-cover border border-orange-50 shrink-0">
+                    <div class="min-w-0">
+                      <h4 class="font-extrabold text-secondary text-sm group-hover:text-primary transition-colors line-clamp-1" 
+                          [innerHTML]="highlightKeyword(product.name, searchQuery())">
+                      </h4>
+                      <p class="text-[11px] text-gray-400 line-clamp-1 leading-normal mt-0.5" 
+                         [innerHTML]="highlightKeyword(product.description || '', searchQuery())">
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0 pl-2">
+                    <span class="font-extrabold text-primary text-sm">₹{{ product.price }}</span>
+                    <mat-icon style="font-size: 16px; width: 16px; height: 16px;" class="text-gray-400 group-hover:text-primary transition-colors">chevron_right</mat-icon>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -347,6 +394,13 @@ export class Home implements OnInit {
   expandedCategories = signal<Set<string>>(new Set());
   menuSheetExpandedCategories = signal<Set<string>>(new Set());
 
+  // Dynamic Search state
+  searchQuery = signal<string>('');
+  searchLoading = signal<boolean>(false);
+  searchResults = signal<Product[]>([]);
+  private searchTimeout: any = null;
+  private allProductsList: Product[] = [];
+
   filteredMenuGroups = computed(() => {
     const sort = this.priceSort();
     let groups = this.menuGroups();
@@ -408,6 +462,13 @@ export class Home implements OnInit {
   ];
 
   ngOnInit() {
+    // Cache products for high-performance dynamic search
+    this.productService.getProductsByOutlet(environment.outletId).subscribe({
+      next: (res) => {
+        this.allProductsList = res || [];
+      }
+    });
+
     this.categoryService.getCategories(environment.outletId).subscribe({
       next: (res) => {
         this.categories.set(res.categories || []);
@@ -479,6 +540,39 @@ export class Home implements OnInit {
     if (query.trim()) {
       this.router.navigate(['/products'], { queryParams: { search: query.trim() } });
     }
+  }
+
+  onSearchInput(val: string) {
+    this.searchQuery.set(val);
+    if (!val.trim()) {
+      this.searchResults.set([]);
+      this.searchLoading.set(false);
+      return;
+    }
+
+    this.searchLoading.set(true);
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+
+    this.searchTimeout = setTimeout(() => {
+      const q = val.toLowerCase().trim();
+      const escaped = q.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const regex = new RegExp('\\b' + escaped, 'i');
+      const matches = this.allProductsList.filter(p => 
+        regex.test(p.name) || 
+        (p.description && regex.test(p.description))
+      );
+      this.searchResults.set(matches);
+      this.searchLoading.set(false);
+    }, 300);
+  }
+
+  highlightKeyword(text: string, query: string): string {
+    if (!query || !text) return text;
+    const escaped = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(`(${escaped})`, 'gi');
+    return text.replace(regex, '<mark style="background-color: #fef08a; color: #854d0e; padding: 0px 2px; border-radius: 4px; font-weight: bold;">$1</mark>');
   }
 
   scrollToCategory(categoryId: string) {

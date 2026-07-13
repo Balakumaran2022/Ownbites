@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
         <div class="flex flex-col items-center md:items-start gap-2">
           <div class="flex items-center gap-2 cursor-pointer group">
             <div class="w-10 h-10 rounded-xl overflow-hidden shadow-lg group-hover:scale-105 transition-transform border border-gray-800 bg-white flex items-center justify-center">
-              <img [src]="orgService.org().logoUrl" [alt]="orgService.org().name" class="w-full h-full object-contain p-0.5" />
+              <img [src]="orgService.org().logoUrl" [alt]="orgService.org().name" class="w-full h-full object-cover" />
             </div>
             <span class="text-xl font-extrabold text-white tracking-tight">{{orgService.org().name}}</span>
           </div>

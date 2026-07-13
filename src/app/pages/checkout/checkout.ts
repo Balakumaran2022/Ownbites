@@ -43,36 +43,7 @@ import { environment } from '../../../environments/environment';
           </ng-template>
         </app-ui-card>
 
-        <!-- Pickup Timing (Only for Pickup) -->
-        <app-ui-card *ngIf="orderService.orderType() === 'Pickup'" [padding]="true" class="block">
-          <h2 class="text-xl font-bold text-secondary mb-4 border-b border-gray-100 pb-4 flex items-center gap-2">
-            <mat-icon class="text-primary">schedule</mat-icon> Pickup Timing
-          </h2>
-          <div class="space-y-2 relative">
-            <label class="block text-sm font-medium text-gray-700">Select Time</label>
-            
-            <!-- Custom Dropdown Trigger Button -->
-            <button 
-              (click)="showTimeDropdown.set(!showTimeDropdown())"
-              class="w-full sm:w-auto px-5 py-3 border border-gray-200 bg-slate-50 hover:bg-slate-100 hover:border-gray-300 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-orange-500/10 text-secondary font-extrabold text-lg transition-all outline-none cursor-pointer tracking-wider flex items-center justify-between gap-3 min-w-[180px]">
-              <span>{{ formatTime12h(pickupTime) }}</span>
-              <mat-icon class="text-gray-400">schedule</mat-icon>
-            </button>
 
-            <!-- Custom Dropdown List Card (Rounded corners) -->
-            <div *ngIf="showTimeDropdown()" 
-              class="absolute left-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-luxury z-50 p-2 max-h-60 overflow-y-auto animate-fade-in-up">
-              <div 
-                *ngFor="let slot of timeSlots" 
-                (click)="selectSlot(slot)"
-                class="px-4 py-2.5 rounded-xl text-sm font-bold text-secondary hover:bg-orange-50 hover:text-primary transition-all cursor-pointer select-none">
-                {{ slot }}
-              </div>
-            </div>
-
-            <p class="text-xs text-gray-500 mt-2">Please choose when you'd like to pick up your order.</p>
-          </div>
-        </app-ui-card>
 
         <!-- Payment Mode -->
         <app-ui-card [padding]="true" class="block">
@@ -119,17 +90,25 @@ import { environment } from '../../../environments/environment';
               <span>Delivery Partner Fee</span>
               <span class="font-bold text-secondary">₹{{deliveryCharge() | number:'1.2-2'}}</span>
             </div>
-            <div class="flex items-center justify-between text-green-600 font-extrabold" *ngIf="discountAmount() > 0">
-              <span class="flex items-center gap-1">
-                <mat-icon class="text-[18px] w-[18px] h-[18px]">local_offer</mat-icon>
-                <span>Coupon Discount ({{selectedCoupon()?.code}})</span>
-              </span>
-              <span>-₹{{discountAmount() | number:'1.2-2'}}</span>
+            <div class="flex flex-col text-green-600 font-extrabold" *ngIf="discountAmount() > 0">
+              <div class="flex items-center justify-between">
+                <span class="flex items-center gap-1">
+                  <mat-icon class="text-[18px] w-[18px] h-[18px]">local_offer</mat-icon>
+                  <span>Coupon Discount ({{selectedCoupon()?.code}})</span>
+                </span>
+                <span>-₹{{discountAmount() | number:'1.2-2'}}</span>
+              </div>
+              <span class="text-[10px] text-green-600/85 font-extrabold ml-5.5 mt-0.5">*valid only 4 days</span>
             </div>
             <div class="h-px bg-gray-100 my-2"></div>
             <div class="flex items-center justify-between text-base font-black text-secondary">
               <span>Grand Total</span>
               <span class="text-[#f4811f]">₹{{totalToPay() | number:'1.2-2'}}</span>
+            </div>
+            <!-- Pickup Note -->
+            <div class="mt-4 p-3 bg-orange-50 border border-orange-200/60 rounded-xl flex items-start gap-2 text-xs text-orange-800 font-bold" *ngIf="orderService.orderType() === 'Self Pickup'">
+              <mat-icon class="text-orange-600 mt-0.5" style="font-size:16px; width:16px; height:16px;">info</mat-icon>
+              <span>Note: This order is valid for pickup for 30 minutes from the time of order.</span>
             </div>
           </div>
         </app-ui-card>
@@ -245,7 +224,7 @@ export class Checkout implements OnInit {
 
   shouldShowPaymentMethod(pm: any): boolean {
     const type = this.orderService.orderType();
-    if ((type === 'Pickup' || type === 'Takeaway') && pm.id === 'COD') {
+    if (type === 'Self Pickup' && pm.id === 'COD') {
       return false;
     }
     return true;
@@ -258,7 +237,7 @@ export class Checkout implements OnInit {
     ]).pipe(delay(500)).subscribe(methods => {
       this.paymentMethods.set(methods);
       const type = this.orderService.orderType();
-      if (type === 'Pickup' || type === 'Takeaway') {
+      if (type === 'Self Pickup') {
         this.paymentMode = 'Online';
       } else {
         this.paymentMode = methods[0].id;
@@ -273,7 +252,7 @@ export class Checkout implements OnInit {
     
     let mappedDeliveryType = 'Door Delivery';
     const currentType = this.orderService.orderType();
-    if (currentType === 'Pickup' || currentType === 'Takeaway') {
+    if (currentType === 'Self Pickup') {
       mappedDeliveryType = 'Self Pickup';
     }
     
@@ -352,7 +331,7 @@ export class Checkout implements OnInit {
       instruction: '',
       status: 'Pending',
       date: new Date(),
-      pickupTime: currentType === 'Pickup' ? this.pickupTime : undefined
+      pickupTime: currentType === 'Self Pickup' ? this.pickupTime : undefined
     };
 
     if (currentType === 'Door Delivery') {
@@ -442,7 +421,7 @@ export class Checkout implements OnInit {
           total:         this.totalToPay(),            // ← frontend computed (matches checkout display)
           savedAmount:   +(orderObj?.savedAmount || 0),
           createdAt:     orderObj?.createdAt || new Date().toISOString(),
-          tokenNumber:   this.orderService.orderType() === 'Takeaway'
+          tokenNumber:   this.orderService.orderType() === 'Self Pickup'
                            ? Math.floor(100 + Math.random() * 900) : null
         };
         localStorage.setItem('ownbites_last_order', JSON.stringify(receiptData));

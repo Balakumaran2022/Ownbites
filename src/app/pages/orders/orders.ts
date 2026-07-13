@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { OrderService } from '../../services/order';
 import { WebSocketService } from '../../services/websocket';
+import { OrganizationService } from '../../services/organization';
 
 @Component({
   selector: 'app-orders',
@@ -88,7 +89,7 @@ import { WebSocketService } from '../../services/websocket';
                 display:flex;flex-direction:column;align-items:center;justify-content:center;
                 box-shadow:0 4px 12px rgba(249,115,22,0.3);">
                 <mat-icon style="color:#fff;font-size:28px;width:28px;height:28px;">restaurant</mat-icon>
-                <span style="color:#fff;font-size:7px;font-weight:800;letter-spacing:1.5px;margin-top:3px;">OWNBITES</span>
+                <span style="color:#fff;font-size:7px;font-weight:800;letter-spacing:1.5px;margin-top:3px;">{{orgService.org().name.toUpperCase()}}</span>
               </div>
 
               <!-- Info -->
@@ -134,16 +135,6 @@ import { WebSocketService } from '../../services/websocket';
                     onmouseover="this.style.color='#ea580c'"
                     onmouseout="this.style.color='#f97316'">
                     VIEW DETAILS
-                  </button>
-                  <button *ngIf="hasReward(order)"
-                    (click)="openRewardModal(order)"
-                    style="font-size:12px;font-weight:850;color:#16a34a;
-                      text-transform:uppercase;letter-spacing:0.8px;background:none;border:none;
-                      cursor:pointer;padding:0;transition:color 0.15s;display:flex;align-items:center;gap:3.5px;"
-                    onmouseover="this.style.color='#15803d'"
-                    onmouseout="this.style.color='#16a34a'">
-                    <mat-icon style="font-size:16px;width:16px;height:16px;">redeem</mat-icon>
-                    VIEW REWARD
                   </button>
                 </div>
               </div>
@@ -336,100 +327,9 @@ import { WebSocketService } from '../../services/websocket';
         </div>
       </div>
 
-      <!-- Earned Reward Coupon Info inside Details Drawer -->
-      <div *ngIf="hasReward(selectedOrder())" 
-        style="margin-top:20px; padding:14px; border-radius:16px; background:linear-gradient(135deg,#fef9c3,#fef3c7); border:1.5px dashed #d97706; text-align:center;">
-        <div style="font-size:10px;font-weight:800;color:#92400e;display:flex;align-items:center;justify-content:center;gap:5px;letter-spacing:0.5px;">
-          <mat-icon style="font-size:15px;width:15px;height:15px;">redeem</mat-icon>
-          REWARD EARNED FROM THIS ORDER
-        </div>
-        <div style="font-size:18px;font-weight:900;color:#d97706;margin-top:6px;letter-spacing:2.5px;">
-          {{ getScratchCouponCodeForOrder(selectedOrder()) }}
-        </div>
-        <div style="font-size:10.5px;color:#b45309;margin-top:4px;font-weight:600;">
-          Use this code at checkout for ₹20.00 OFF
-        </div>
       </div>
-    </div>
 
-    <!-- ═══════════════════════════════
-         REWARD MODAL (Custom Scratch Card popup)
-    ═══════════════════════════════ -->
-    <div *ngIf="showRewardModal()"
-      class="backdrop fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      
-      <div class="modal-card w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl relative"
-        style="max-width:350px;">
-        
-        <!-- Close button -->
-        <button (click)="showRewardModal.set(false)"
-          class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition-all border-none cursor-pointer z-10">
-          <mat-icon style="font-size:18px;width:18px;height:18px;">close</mat-icon>
-        </button>
 
-        <div style="background:linear-gradient(135deg,#1c1917,#292524); padding:24px 20px; text-align:center;">
-          
-          <!-- Scratchable card layout (unrevealed state) -->
-          <div *ngIf="!scratchRevealed()">
-            <div style="font-size:11px;font-weight:800;letter-spacing:2px;color:#a16207;margin-bottom:6px;">🎁 YOU EARNED A REWARD</div>
-            <div style="font-size:13px;font-weight:700;color:#d4d4d4;margin-bottom:16px;">Scratch to reveal your next order coupon!</div>
-
-            <!-- Scratch canvas container -->
-            <div style="position:relative;width:100%;height:120px;border-radius:14px;overflow:hidden;margin-bottom:12px;"
-              (mousedown)="startScratch($event)" (mousemove)="doScratch($event)" (mouseup)="stopScratch()"
-              (touchstart)="startScratch($event)" (touchmove)="doScratch($event)" (touchend)="stopScratch()">
-
-              <!-- Prize underneath -->
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;
-                align-items:center;justify-content:center;
-                background:linear-gradient(135deg,#fef9c3,#fef3c7);">
-                <div style="font-size:32px;font-weight:900;color:#d97706;letter-spacing:-1px;">₹20 OFF</div>
-                <div style="font-size:12px;font-weight:700;color:#92400e;margin-top:5px;">Code: {{ scratchCoupon()?.code }}</div>
-                <div style="font-size:9px;color:#b45309;margin-top:2px;">Valid for 7 days · Next order</div>
-              </div>
-
-              <!-- Canvas scratch layer -->
-              <canvas #modalCanvas
-                width="300" height="120"
-                style="position:absolute;inset:0;width:100%;height:100%;border-radius:14px;cursor:crosshair;touch-action:none;"></canvas>
-            </div>
-            <div style="font-size:11px;color:#78716c;">✋ Scratch with finger or mouse to reveal</div>
-          </div>
-
-          <!-- Revealed State -->
-          <div *ngIf="scratchRevealed()" class="animate-fade-in"
-            style="background:linear-gradient(135deg,#fef9c3,#fef3c7); border-radius:14px; padding:20px 16px;">
-            <div style="font-size:13px;font-weight:800;color:#92400e;margin-bottom:8px;">🎉 Congratulations!</div>
-            <div style="font-size:32px;font-weight:900;color:#d97706;letter-spacing:-1px;margin-bottom:12px;">₹20 OFF</div>
-
-            <!-- Code + Copy button -->
-            <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;">
-              <div style="background:#d97706;color:#fff;font-weight:900;
-                font-size:14px;letter-spacing:3px;padding:8px 16px;border-radius:10px;">{{ scratchCoupon()?.code }}</div>
-              <button (click)="copyCoupon()"
-                style="width:36px;height:36px;border-radius:10px;border:2px solid #d97706;
-                  background:couponCopied() ? '#d97706' : '#fff';
-                  color:couponCopied() ? '#fff' : '#d97706';
-                  display:flex;align-items:center;justify-content:center;
-                  cursor:pointer;transition:all .2s;flex-shrink:0;"
-                [style.background]="couponCopied() ? '#d97706' : '#fff'"
-                [style.color]="couponCopied() ? '#fff' : '#d97706'">
-                <mat-icon style="font-size:16px;width:16px;height:16px;">
-                  {{couponCopied() ? 'check' : 'content_copy'}}
-                </mat-icon>
-              </button>
-            </div>
-            <div *ngIf="couponCopied()" style="font-size:10px;color:#16a34a;font-weight:700;margin-bottom:6px;">✅ Copied!</div>
-
-            <div style="font-size:11px;color:#92400e;font-weight:600;line-height:1.5;">
-              Use this code at checkout for ₹20 off!<br>
-              <span style="color:#b45309;font-size:10px;">Valid for 7 days</span>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
 
   </div>
 </ng-container>
@@ -438,24 +338,12 @@ import { WebSocketService } from '../../services/websocket';
 export class Orders implements OnInit, OnDestroy {
   orderService  = inject(OrderService);
   webSocketService = inject(WebSocketService);
+  orgService = inject(OrganizationService);
 
   orders       = signal<any[]>([]);
   loading      = signal(true);
   selectedOrder = signal<any>(null);
   private sub: Subscription | null = null;
-
-  // Scratch card modal signals and properties
-  @ViewChild('modalCanvas') modalCanvasRef!: ElementRef<HTMLCanvasElement>;
-  showRewardModal = signal(false);
-  activeRewardOrder = signal<any>(null);
-  scratchCoupon = signal<any>(null);
-  scratchRevealed = signal(false);
-  couponCopied = signal(false);
-
-  private scratchCtx: CanvasRenderingContext2D | null = null;
-  private isScratching = false;
-  private scratchInitDone = false;
-  private readonly SCRATCH_KEY = 'ownbites_scratch_coupon';
 
   ngOnInit() {
     this.orderService.getOrders().subscribe({
@@ -492,7 +380,7 @@ export class Orders implements OnInit, OnDestroy {
 
   // ── helpers ──────────────────────────────────────────
   getOrderId(o: any)    { return o?.orderId || o?._id || o?.id || ''; }
-  getOutletName(o: any) { return o?.outletDetails?.outletName || o?.outlet?.name || 'OwnBites Store'; }
+  getOutletName(o: any) { return o?.outletDetails?.outletName || o?.outlet?.name || (this.orgService.org().name + ' Store'); }
   getAddress(o: any)    { return o?.outletDetails?.address || o?.outlet?.address || ''; }
   getStatus(o: any)     { return this.orderService.normalizeStatus(o?.status || 'Pending'); }
   getItems(o: any)      { return o?.items || o?.orderDetails || o?.orderItems || []; }
@@ -531,19 +419,7 @@ export class Orders implements OnInit, OnDestroy {
   getCouponCode(o: any): string {
     return o?.couponCode || o?.cartDiscountDetails?.couponCode || o?.summary?.couponCode || '';
   }
-  getScratchCouponCodeForOrder(o: any): string {
-    try {
-      const raw = localStorage.getItem(this.SCRATCH_KEY);
-      if (raw) {
-        const sc = JSON.parse(raw);
-        const orderId = this.getOrderId(o);
-        if (sc.orderId === orderId) {
-          return sc.code;
-        }
-      }
-    } catch { /* ignore */ }
-    return '';
-  }
+
 
   getItemSummary(o: any): string {
     const items = this.getItems(o);
@@ -567,150 +443,4 @@ export class Orders implements OnInit, OnDestroy {
     return '#92400e'; // Pending
   }
 
-  // ── Reward modal methods ──────────────────────────────────────────
-  hasReward(o: any): boolean {
-    try {
-      const raw = localStorage.getItem(this.SCRATCH_KEY);
-      if (raw) {
-        const sc = JSON.parse(raw);
-        const orderId = this.getOrderId(o);
-        return sc.orderId === orderId && sc.amount > 0;
-      }
-    } catch { /* ignore */ }
-    return false;
-  }
-
-  openRewardModal(order: any) {
-    this.activeRewardOrder.set(order);
-    try {
-      const raw = localStorage.getItem(this.SCRATCH_KEY);
-      if (raw) {
-        const sc = JSON.parse(raw);
-        this.scratchCoupon.set(sc);
-        this.scratchRevealed.set(sc.revealed);
-        this.couponCopied.set(false);
-        this.showRewardModal.set(true);
-        this.scratchInitDone = false;
-        
-        if (!sc.revealed) {
-          setTimeout(() => this.initModalCanvas(), 120);
-        }
-      }
-    } catch { /* ignore */ }
-  }
-
-  private initModalCanvas() {
-    if (this.scratchRevealed() || this.scratchInitDone) return;
-    const canvas = this.modalCanvasRef?.nativeElement;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    this.scratchCtx = ctx;
-    this.scratchInitDone = true;
-
-    // Draw gold cover
-    const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-    grad.addColorStop(0,   '#b45309');
-    grad.addColorStop(0.3, '#d97706');
-    grad.addColorStop(0.5, '#fbbf24');
-    grad.addColorStop(0.7, '#d97706');
-    grad.addColorStop(1,   '#b45309');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = 'rgba(255,255,255,0.45)';
-    ctx.font = 'bold 14px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('✦ SCRATCH HERE ✦', canvas.width / 2, canvas.height / 2 + 4);
-  }
-
-  startScratch(e: MouseEvent | TouchEvent) {
-    this.isScratching = true;
-    this.eraseScratch(e);
-  }
-  doScratch(e: MouseEvent | TouchEvent) {
-    if (!this.isScratching) return;
-    this.eraseScratch(e);
-  }
-  stopScratch() {
-    this.isScratching = false;
-    this.checkReveal();
-  }
-
-  private eraseScratch(e: MouseEvent | TouchEvent) {
-    const ctx = this.scratchCtx;
-    const canvas = this.modalCanvasRef?.nativeElement;
-    if (!ctx || !canvas) return;
-    e.preventDefault();
-
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width  / rect.width;
-    const scaleY = canvas.height / rect.height;
-
-    let clientX: number, clientY: number;
-    if (e instanceof MouseEvent) {
-      clientX = e.clientX; clientY = e.clientY;
-    } else {
-      clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
-    }
-
-    const x = (clientX - rect.left) * scaleX;
-    const y = (clientY - rect.top)  * scaleY;
-
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath();
-    ctx.arc(x, y, 20, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  private checkReveal() {
-    const canvas = this.modalCanvasRef?.nativeElement;
-    const ctx = this.scratchCtx;
-    if (!canvas || !ctx) return;
-
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const pixels = imageData.data;
-    let transparent = 0;
-    for (let i = 3; i < pixels.length; i += 4) {
-      if (pixels[i] < 128) transparent++;
-    }
-    const total = pixels.length / 4;
-    const pct   = (transparent / total) * 100;
-
-    if (pct >= 55) {
-      this.reveal();
-    }
-  }
-
-  private reveal() {
-    if (this.scratchRevealed()) return;
-    const ctx = this.scratchCtx;
-    const canvas = this.modalCanvasRef?.nativeElement;
-    if (ctx && canvas) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    try {
-      const existing = localStorage.getItem(this.SCRATCH_KEY);
-      if (existing) {
-        const sc = JSON.parse(existing);
-        sc.revealed = true;
-        localStorage.setItem(this.SCRATCH_KEY, JSON.stringify(sc));
-        this.scratchCoupon.set(sc);
-      }
-    } catch { /* ignore */ }
-
-    setTimeout(() => this.scratchRevealed.set(true), 400);
-  }
-
-  copyCoupon() {
-    const code = this.scratchCoupon()?.code || 'SCRATCH20';
-    navigator.clipboard.writeText(code).then(() => {
-      this.couponCopied.set(true);
-      try {
-        localStorage.setItem('ownbites_copied_coupon', code);
-      } catch { /* ignore */ }
-      setTimeout(() => this.couponCopied.set(false), 2000);
-    });
-  }
 }

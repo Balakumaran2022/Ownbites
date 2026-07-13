@@ -43,12 +43,12 @@ import { environment } from '../environments/environment';
     -->
     <div 
       class="h-auto min-h-screen flex flex-col bg-background" 
-      [style.display]="(!customerService.currentUser() || !orderService.orderType() || (orderService.orderType() === 'Door Delivery' && !addressService.currentAddress()) || (orderService.orderType() !== 'Door Delivery' && !outletService.selectedOutlet()) || isClosedGateActive()) ? 'none' : 'flex'"
+      [style.display]="(!customerService.currentUser() || !orderService.orderType() || !addressService.currentAddress() || isClosedGateActive()) ? 'none' : 'flex'"
       [class.blur-sm]="showAddressModal() || showMap() || showOutletModal()" 
       [class.pointer-events-none]="showAddressModal() || showMap() || showOutletModal()">
       
       <app-header 
-        (changeAddress)="orderService.orderType() === 'Door Delivery' ? showAddressModal.set(true) : showOutletModal.set(true)" 
+        (changeAddress)="showAddressModal.set(true)" 
         (changeOrderType)="showOrderTypeModal.set(true)">
       </app-header>
       <main class="flex-grow">
@@ -74,8 +74,8 @@ import { environment } from '../environments/environment';
       </app-order-type-modal>
     </ng-container>
 
-    <!-- Gate 3a: Logged In, Order Type = Door Delivery, No Address Selected -->
-    <ng-container *ngIf="customerService.currentUser() && orderService.orderType() === 'Door Delivery' && !addressService.currentAddress()">
+    <!-- Gate 3a: Logged In, Order Type = Door Delivery or Self Pickup, No Address Selected -->
+    <ng-container *ngIf="customerService.currentUser() && orderService.orderType() && !addressService.currentAddress()">
       <div class="fixed inset-0 bg-[#FAF9F6] bg-gradient-to-br from-[#FAF9F6] to-orange-50 z-40"></div>
       <app-address-selection-modal 
         *ngIf="!showMap()" 
@@ -85,14 +85,6 @@ import { environment } from '../environments/environment';
         *ngIf="showMap()" 
         (close)="showMap.set(false)">
       </app-add-address-map>
-    </ng-container>
-
-    <!-- Gate 3b: Logged In, Order Type = Pickup/Takeaway, No Outlet Selected -->
-    <ng-container *ngIf="customerService.currentUser() && (orderService.orderType() === 'Pickup' || orderService.orderType() === 'Takeaway') && !outletService.selectedOutlet()">
-      <div class="fixed inset-0 bg-[#FAF9F6] bg-gradient-to-br from-[#FAF9F6] to-orange-50 z-40"></div>
-      <app-outlet-selection-modal 
-        [allowClose]="false">
-      </app-outlet-selection-modal>
     </ng-container>
 
     <!-- Gate 4: Store Closed Gate (Styled in Orange Theme) -->
@@ -130,26 +122,18 @@ import { environment } from '../environments/environment';
               <span>Remind me when open</span>
             </button>
             
-            <!-- Change Outlet (for Pickup/Takeaway) -->
-            <button *ngIf="orderService.orderType() !== 'Door Delivery'"
-                    (click)="changeOutlet()" 
-                    class="w-full border-2 border-orange-200 hover:border-orange-500 text-orange-600 hover:text-orange-700 font-bold py-3.5 rounded-xl transition-all duration-300 bg-white">
-              Change Outlet
-            </button>
-
-            <!-- Change Address (for Delivery) -->
-            <button *ngIf="orderService.orderType() === 'Door Delivery'"
-                    (click)="changeAddress()" 
+            <!-- Change Address (for both Delivery and Self Pickup) -->
+            <button (click)="changeAddress()" 
                     class="w-full bg-orange-50/70 hover:bg-orange-100/80 text-orange-700 font-bold py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
               <mat-icon style="font-size:18px; width:18px; height:18px;" class="text-orange-500">location_on</mat-icon>
-              <span>Change Address</span>
+              <span>Change Location</span>
             </button>
           </div>
 
           <!-- Footer brand name + selected outlet -->
           <div class="mt-8 flex items-center gap-2 justify-center border-t border-gray-100 pt-5 w-full">
             <div class="w-6 h-6 rounded-md overflow-hidden bg-white border border-gray-100 flex items-center justify-center">
-              <img [src]="organizationService.org().logoUrl" [alt]="organizationService.org().name" class="w-full h-full object-contain" />
+              <img [src]="organizationService.org().logoUrl" [alt]="organizationService.org().name" class="w-full h-full object-cover" />
             </div>
             <span class="text-gray-900 font-bold text-sm">{{ organizationService.org().name }}</span>
             <span class="text-gray-300">•</span>
@@ -197,22 +181,23 @@ import { environment } from '../environments/environment';
     <!-- Global Floating Elements -->
     <app-cookie-consent></app-cookie-consent>
 
-    <!-- Sticky Proceed to Checkout Banner — visible on home/menu pages when cart has items -->
+    <!-- Sticky View Cart Banner — visible on home/menu pages when cart has items -->
     <div *ngIf="cartService.cartItems().length > 0 && !router.url.includes('/cart') && !router.url.includes('/checkout')"
          class="fixed left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md animate-fade-in-up"
-         style="bottom:88px; z-index:60;">
-      <div class="bg-gradient-to-r from-primary to-orange-600 rounded-2xl shadow-luxury-hover p-4 px-5 flex items-center justify-between cursor-pointer hover:-translate-y-1 transition-all" routerLink="/checkout">
+         [style.bottom.px]="hasCookieConsent() ? 24 : 84"
+         style="z-index:60;">
+      <div class="bg-gradient-to-r from-primary to-orange-600 rounded-2xl shadow-luxury-hover py-2.5 px-5 flex items-center justify-between cursor-pointer hover:-translate-y-1 transition-all" routerLink="/cart">
         <!-- Left: item count + total -->
         <div class="flex flex-col text-white">
           <span class="font-extrabold text-base leading-tight">
             {{cartService.cartItems().length}} {{cartService.cartItems().length === 1 ? 'item' : 'items'}} · ₹{{cartService.cartSummary().total | number:'1.0-0'}}
           </span>
-          <span class="text-white/80 text-xs font-semibold">extra charges may apply</span>
+          <span class="text-white/80 text-[10px] font-semibold leading-none mt-0.5">extra charges may apply</span>
         </div>
         <!-- Right: CTA -->
-        <div class="flex items-center gap-1.5 text-white font-extrabold tracking-wide text-sm uppercase">
-          Proceed to Checkout
-          <mat-icon style="width: 18px; height: 18px; font-size: 18px;">arrow_forward</mat-icon>
+        <div class="flex items-center gap-1.5 text-white font-extrabold tracking-wide text-xs uppercase">
+          View Cart
+          <mat-icon style="width: 16px; height: 16px; font-size: 16px;">shopping_cart</mat-icon>
         </div>
       </div>
     </div>
@@ -242,13 +227,33 @@ export class AppComponent implements OnInit {
 
     // Call API 1 & API 4 to fetch organization details and settings
     this.organizationService.getOrganization('ieyal').subscribe({
-      next: (res) => console.log('[Org] Get Organization raw response:', JSON.stringify(res)),
+      next: (res) => {
+        console.log('[Org] Get Organization raw response:', JSON.stringify(res));
+        // Dynamically update site favicon to organization logo
+        const logoUrl = this.organizationService.org().logoUrl;
+        if (logoUrl) {
+          const favicon = document.getElementById('app-favicon') as HTMLLinkElement;
+          if (favicon) {
+            favicon.href = logoUrl;
+          }
+        }
+      },
       error: (err) => console.error('[Org] Get Organization failed:', err)
     });
 
     this.organizationService.getSettings(environment.outletId).subscribe({
       next: (res) => console.log('[Org] Get Settings raw response:', JSON.stringify(res)),
       error: (err) => console.error('[Org] Get Settings failed:', err)
+    });
+
+    // Auto-fetch and select default/nearest outlet on boot
+    this.outletService.getOutlets().subscribe({
+      next: (outlets) => {
+        if (outlets && outlets.length > 0) {
+          const active = outlets.find(o => o.storeStatus) || outlets[0];
+          this.outletService.setSelectedOutlet(active);
+        }
+      }
     });
   }
 
@@ -258,10 +263,7 @@ export class AppComponent implements OnInit {
     if (!user || !type) return false;
     
     const hasAddress = this.addressService.currentAddress();
-    const hasOutlet = this.outletService.selectedOutlet();
-    
-    if (type === 'Door Delivery' && !hasAddress) return false;
-    if (type !== 'Door Delivery' && !hasOutlet) return false;
+    if (!hasAddress) return false;
     
     // If they are currently editing location or outlet, hide closed gate so they see the modals
     if (this.showAddressModal() || this.showOutletModal() || this.showMap()) {
@@ -308,5 +310,9 @@ export class AppComponent implements OnInit {
   getActiveOutletName(): string {
     const outlet = this.outletService.selectedOutlet();
     return outlet ? outlet.name : 'Safina';
+  }
+
+  hasCookieConsent(): boolean {
+    return !!localStorage.getItem('ownbites_cookie_consent');
   }
 }

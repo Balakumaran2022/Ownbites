@@ -19,13 +19,13 @@ import { OrganizationService } from '../../services/organization';
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule, MatIconModule, UiButton, UiCard],
   template: `
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-32 min-h-[60vh]">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-32 min-h-[60vh]">
       <h1 class="text-3xl font-extrabold text-secondary mb-8">Your Cart</h1>
       
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start" *ngIf="cartService.cartItems().length > 0; else emptyCart">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start" *ngIf="cartService.cartItems().length > 0; else emptyCart">
         
         <!-- Left Column: Cart Items + Extra Options -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="lg:col-span-7 space-y-6">
 
           <!-- First User Welcome Promo Banner (Left Column) -->
           <div *ngIf="isFirstUser() && cartService.selectedCoupon()?.code !== 'WELCOME50'"
@@ -99,7 +99,7 @@ import { OrganizationService } from '../../services/organization';
         </div>
 
         <!-- Right Column: Summary + Coupon Section -->
-        <div class="lg:col-span-1 space-y-6">
+        <div class="lg:col-span-5 space-y-6">
 
           <app-ui-card [padding]="true" class="block">
             <h2 class="text-lg font-bold text-secondary mb-4 border-b border-gray-100 pb-2.5 flex items-center gap-2">
@@ -232,12 +232,15 @@ import { OrganizationService } from '../../services/organization';
                 <span>Item Subtotal</span>
                 <span class="font-bold text-secondary">₹{{subtotal() | number:'1.2-2'}}</span>
               </div>
-              <div class="flex justify-between text-green-600 font-bold animate-fade-in" *ngIf="cartService.cartSummary().discount > 0">
-                <span class="flex items-center gap-0.5">
-                  <mat-icon style="font-size:14px;width:14px;height:14px;" class="mt-0.5">local_offer</mat-icon>
-                  Coupon Savings ({{cartService.selectedCoupon()?.code}})
-                </span>
-                <span>-₹{{cartService.cartSummary().discount | number:'1.2-2'}}</span>
+              <div class="flex flex-col text-green-600 animate-fade-in" *ngIf="cartService.cartSummary().discount > 0">
+                <div class="flex justify-between font-bold">
+                  <span class="flex items-center gap-0.5">
+                    <mat-icon style="font-size:14px;width:14px;height:14px;" class="mt-0.5">local_offer</mat-icon>
+                    Coupon Savings ({{cartService.selectedCoupon()?.code}})
+                  </span>
+                  <span>-₹{{cartService.cartSummary().discount | number:'1.2-2'}}</span>
+                </div>
+                <span class="text-[10px] text-green-600/80 font-bold ml-4.5 mt-0.5">*valid only 4 days</span>
               </div>
               <div class="flex justify-between">
                 <span>Taxes (5%)</span>
@@ -363,58 +366,6 @@ export class Cart implements OnInit {
       next: (res) => this.allProducts.set(res || []),
       error: (err) => console.error('Error loading products for recommendations:', err)
     });
-
-    // Add dynamic scratch card reward to the list of available coupons if unlocked & valid
-    try {
-      const raw = localStorage.getItem('ownbites_scratch_coupon');
-      if (raw) {
-        const sc = JSON.parse(raw);
-        if (sc.revealed && sc.code && sc.amount > 0 && sc.expiry > Date.now()) {
-          // Check if not already in the list
-          if (!this.coupons.some(c => c.code === sc.code)) {
-            this.coupons.push({
-              code: sc.code,
-              label: 'Scratch Reward',
-              title: '₹20 OFF',
-              desc: 'Scratch card reward discount',
-              type: 'flat',
-              value: sc.amount,
-              min: 0
-            });
-          }
-        }
-      }
-    } catch { /* ignore */ }
-
-    // Auto-apply copied coupon code if any
-    try {
-      const copied = localStorage.getItem('ownbites_copied_coupon');
-      if (copied) {
-        const couponToApply = this.coupons.find(c => c.code === copied);
-        if (couponToApply) {
-          this.applyCoupon(couponToApply);
-        } else {
-          // If not in standard coupons list, check scratch coupon storage
-          const rawSc = localStorage.getItem('ownbites_scratch_coupon');
-          if (rawSc) {
-            const sc = JSON.parse(rawSc);
-            if (sc.code === copied && sc.revealed && sc.amount > 0 && sc.expiry > Date.now()) {
-              const tempCoupon = {
-                code: sc.code,
-                label: 'Scratch Reward',
-                title: '₹20 OFF',
-                desc: 'Scratch card reward discount',
-                type: 'flat',
-                value: sc.amount,
-                min: 0
-              };
-              this.applyCoupon(tempCoupon);
-            }
-          }
-        }
-        localStorage.removeItem('ownbites_copied_coupon');
-      }
-    } catch { /* ignore */ }
   }
 
   checkUserOrderHistory() {
@@ -583,11 +534,6 @@ export class Cart implements OnInit {
       // WELCOME50 is priority 1, only for new users
       if (c.code === 'WELCOME50') {
         return isNew;
-      }
-
-      // Scratch Reward coupons are always listed as eligible options
-      if (c.label === 'Scratch Reward') {
-        return true;
       }
 
       // Subtotal coupons are only shown if they match the active range eligibility code

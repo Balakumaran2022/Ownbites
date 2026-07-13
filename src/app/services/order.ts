@@ -6,7 +6,7 @@ import { Order } from '../models';
 import { environment } from '../../environments/environment';
 import { CustomerService } from './customer';
 
-export type OrderType = 'Door Delivery' | 'Pickup' | 'Takeaway';
+export type OrderType = 'Door Delivery' | 'Self Pickup';
 
 @Injectable({
   providedIn: 'root'
@@ -110,6 +110,10 @@ export class OrderService {
   }
 
   getOrders(): Observable<any[]> {
+    if (this.customerService.isDemoUser) {
+      return of(this.getLocalOrders());
+    }
+
     if (this.ordersCache$) {
       return this.ordersCache$;
     }

@@ -31,29 +31,16 @@ import { OrderService, OrderType } from '../../../services/order';
             </div>
           </div>
 
-          <!-- Pickup -->
+          <!-- Self Pickup -->
           <div 
-            (click)="selectType('Pickup')"
+            (click)="selectType('Self Pickup')"
             class="flex items-center gap-4 p-5 rounded-2xl border-2 border-gray-100 cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-all group">
             <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-              <mat-icon>store_front</mat-icon>
+              <mat-icon>storefront</mat-icon>
             </div>
             <div>
-              <h3 class="font-bold text-gray-900 text-lg">Pickup</h3>
+              <h3 class="font-bold text-gray-900 text-lg">Self Pickup</h3>
               <p class="text-sm text-gray-500">Order ahead and pick it up yourself.</p>
-            </div>
-          </div>
-
-          <!-- Takeaway -->
-          <div 
-            (click)="selectType('Takeaway')"
-            class="flex items-center gap-4 p-5 rounded-2xl border-2 border-gray-100 cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-all group">
-            <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-              <mat-icon>shopping_bag</mat-icon>
-            </div>
-            <div>
-              <h3 class="font-bold text-gray-900 text-lg">Takeaway</h3>
-              <p class="text-sm text-gray-500">Grab it in a sealed package to go.</p>
             </div>
           </div>
         </div>
