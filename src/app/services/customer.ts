@@ -13,11 +13,14 @@ export class CustomerService {
   public currentUser = signal<User | null>(null);
 
   constructor() {
-    // Force reset old sessions from backend2 to prevent "User no longer exists" on backend3
-    if (!localStorage.getItem('ownbites_backend3_session_reset_v1')) {
+    // v2: Force-clear any stale/expired sessions (backend2 leftovers or expired backend3 tokens)
+    // Bump this version number any time tokens become universally invalid
+    if (!localStorage.getItem('ownbites_backend3_session_reset_v2')) {
       localStorage.removeItem('foodie_customer');
       localStorage.removeItem('foodie_token');
-      localStorage.setItem('ownbites_backend3_session_reset_v1', 'true');
+      // Clear old v1 flag too so we don't accumulate flags
+      localStorage.removeItem('ownbites_backend3_session_reset_v1');
+      localStorage.setItem('ownbites_backend3_session_reset_v2', 'true');
     }
 
     // Load from local storage on boot
@@ -29,6 +32,15 @@ export class CustomerService {
         localStorage.removeItem('foodie_customer');
       }
     }
+  }
+
+  /** Call this when the backend returns 401 Session expired — forces re-login */
+  forceLogout() {
+    this.currentUser.set(null);
+    localStorage.removeItem('foodie_customer');
+    localStorage.removeItem('foodie_token');
+    // Remove the reset flag so the user is also cleaned up on next reload
+    localStorage.removeItem('ownbites_backend3_session_reset_v2');
   }
 
   login(phone: string): Observable<string> {
