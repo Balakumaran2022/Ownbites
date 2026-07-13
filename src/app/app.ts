@@ -197,20 +197,26 @@ import { environment } from '../environments/environment';
     <!-- Global Floating Elements -->
     <app-cookie-consent></app-cookie-consent>
 
-    <!-- Sticky View Cart Banner — sits above cookie consent when both visible -->
+    <!-- Sticky Proceed to Checkout Banner — visible on home/menu pages when cart has items -->
     <div *ngIf="cartService.cartItems().length > 0 && !router.url.includes('/cart') && !router.url.includes('/checkout')"
          class="fixed left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md animate-fade-in-up"
          style="bottom:88px; z-index:60;">
-      <div class="bg-gradient-to-r from-primary to-orange-600 rounded-2xl shadow-luxury-hover p-4 px-6 flex items-center justify-between cursor-pointer hover:-translate-y-1 transition-all" routerLink="/cart">
-        <div class="flex items-center gap-2 text-white">
-          <span class="font-extrabold text-lg tracking-tight">{{cartService.cartItems().length}} {{cartService.cartItems().length === 1 ? 'item' : 'items'}} added</span>
+      <div class="bg-gradient-to-r from-primary to-orange-600 rounded-2xl shadow-luxury-hover p-4 px-5 flex items-center justify-between cursor-pointer hover:-translate-y-1 transition-all" routerLink="/checkout">
+        <!-- Left: item count + total -->
+        <div class="flex flex-col text-white">
+          <span class="font-extrabold text-base leading-tight">
+            {{cartService.cartItems().length}} {{cartService.cartItems().length === 1 ? 'item' : 'items'}} · ₹{{cartService.cartSummary().total | number:'1.0-0'}}
+          </span>
+          <span class="text-white/80 text-xs font-semibold">extra charges may apply</span>
         </div>
-        <div class="flex items-center gap-2 text-white font-extrabold tracking-widest text-sm uppercase">
-          VIEW CART
-          <mat-icon style="width: 20px; height: 20px; font-size: 20px;">local_mall</mat-icon>
+        <!-- Right: CTA -->
+        <div class="flex items-center gap-1.5 text-white font-extrabold tracking-wide text-sm uppercase">
+          Proceed to Checkout
+          <mat-icon style="width: 18px; height: 18px; font-size: 18px;">arrow_forward</mat-icon>
         </div>
       </div>
     </div>
+
   `
 })
 export class AppComponent implements OnInit {
