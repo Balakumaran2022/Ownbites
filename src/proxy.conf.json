@@ -14,7 +14,7 @@
       "/setting/",
       "/location/"
     ],
-    "target": "https://backend2.owct.me",
+    "target": "https://backend3.owct.me",
     "secure": false,
     "changeOrigin": true
   }
