@@ -13,7 +13,7 @@ export interface CookieConsent {
 }
 
 const CONSENT_KEY    = 'ownbites_cookie_consent';
-const CONSENT_VER    = 1;    // increment to force re-consent on policy update
+const CONSENT_VER    = 2;    // increment to force re-consent on policy update
 
 @Component({
   selector: 'app-cookie-consent',
