@@ -13,6 +13,13 @@ export class CustomerService {
   public currentUser = signal<User | null>(null);
 
   constructor() {
+    // Force reset old sessions from backend2 to prevent "User no longer exists" on backend3
+    if (!localStorage.getItem('ownbites_backend3_session_reset_v1')) {
+      localStorage.removeItem('foodie_customer');
+      localStorage.removeItem('foodie_token');
+      localStorage.setItem('ownbites_backend3_session_reset_v1', 'true');
+    }
+
     // Load from local storage on boot
     const stored = localStorage.getItem('foodie_customer');
     if (stored) {
