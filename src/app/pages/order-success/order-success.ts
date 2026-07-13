@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { UiButton } from '../../shared/components/ui-button/ui-button';
+import { OrganizationService } from '../../services/organization';
 
 @Component({
   selector: 'app-order-success',
@@ -114,7 +115,7 @@ import { UiButton } from '../../shared/components/ui-button/ui-button';
 
       <!-- top bar: brand + LEDs -->
       <div class="flex items-center justify-between mb-3">
-        <div style="font-weight:800;font-size:14px;letter-spacing:2px;color:#f9fafb;">OwnBites</div>
+        <div style="font-weight:800;font-size:14px;letter-spacing:2px;color:#f9fafb;">{{orgService.org().name}}</div>
         <div class="flex gap-1.5">
           <span class="dot1 w-2.5 h-2.5 rounded-full bg-green-400 block"></span>
           <span class="dot2 w-2.5 h-2.5 rounded-full bg-orange-400 block"></span>
@@ -264,8 +265,8 @@ import { UiButton } from '../../shared/components/ui-button/ui-button';
         <!-- footer -->
         <div style="text-align:center;margin-top:6px;">
           <hr class="rdash">
-          <div style="font-size:9px;color:#111;font-weight:700;">Thank you for ordering with OwnBites!</div>
-          <div style="font-size:9px;color:#111;">support&#64;ownbites.in</div>
+          <div style="font-size:9px;color:#111;font-weight:700;">Thank you for ordering with {{orgService.org().name}}!</div>
+          <div style="font-size:9px;color:#111;">support&#64;{{orgService.org().name.toLowerCase()}}.in</div>
           <!-- barcode -->
           <div style="display:flex;justify-content:center;gap:1px;margin:8px 0 3px;">
             <div *ngFor="let b of barcodeLines"
@@ -404,6 +405,7 @@ import { UiButton } from '../../shared/components/ui-button/ui-button';
 export class OrderSuccess implements OnInit, AfterViewInit {
   private route  = inject(ActivatedRoute);
   private router = inject(Router);
+  orgService     = inject(OrganizationService);
 
   @ViewChild('scratchCanvas') scratchCanvasRef!: ElementRef<HTMLCanvasElement>;
 
@@ -613,7 +615,7 @@ export class OrderSuccess implements OnInit, AfterViewInit {
            <td style="text-align:right;">₹${Number(o.taxes).toFixed(2)}</td></tr>` : '';
 
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>OwnBites Receipt - ${o.orderId}</title>
+<title>${this.orgService.org().name} Receipt - ${o.orderId}</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   body{font-family:'Courier New',monospace;background:#f5f5f5;display:flex;justify-content:center;padding:20px;}
@@ -628,7 +630,7 @@ export class OrderSuccess implements OnInit, AfterViewInit {
   .total td{font-weight:900;font-size:13px;border-top:2px solid #111;padding-top:6px;}
   .footer{text-align:center;font-size:9px;color:#111;margin-top:12px;}
 </style></head><body><div class="receipt">
-  <h1>🍽 OWNBITES</h1>
+  <h1>🍽 ${this.orgService.org().name.toUpperCase()}</h1>
   <div class="sub" style="color:#111;">FOOD DELIVERY &amp; PICKUP</div><hr>
   <table>
     <tr><td class="lbl">ORDER #</td><td class="val">${o.orderId||'N/A'}</td></tr>
@@ -650,15 +652,15 @@ export class OrderSuccess implements OnInit, AfterViewInit {
   </table>
   ${o.address?`<hr><div style="font-size:9px;color:#111;"><b>DELIVERY TO:</b><br>${o.address}</div>`:''}
   <div class="footer"><hr>
-    <p><b>Thank you for ordering with OwnBites!</b></p>
-    <p>support@ownbites.in</p>
+    <p><b>Thank you for ordering with ${this.orgService.org().name}!</b></p>
+    <p>support@${this.orgService.org().name.toLowerCase()}.in</p>
     <p style="margin-top:6px;letter-spacing:2px;font-size:8px;">${o.orderId||''}</p>
   </div>
 </div></body></html>`;
 
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-    a.download = `OwnBites_Receipt_${o.orderId || Date.now()}.html`;
+    a.download = `${this.orgService.org().name}_Receipt_${o.orderId || Date.now()}.html`;
     document.body.appendChild(a); a.click();
     document.body.removeChild(a);
   }

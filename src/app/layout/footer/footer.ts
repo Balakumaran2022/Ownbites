@@ -1,10 +1,12 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { OrganizationService } from '../../services/organization';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [MatIconModule],
+  imports: [MatIconModule, CommonModule],
   template: `
     <footer class="bg-gray-900 text-gray-300 border-t-4 border-primary mt-12">
       <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -12,12 +14,12 @@ import { MatIconModule } from '@angular/material/icon';
         <!-- Left Side: Logo & Copyright -->
         <div class="flex flex-col items-center md:items-start gap-2">
           <div class="flex items-center gap-2 cursor-pointer group">
-            <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-              <mat-icon class="text-white">shopping_cart</mat-icon>
+            <div class="w-10 h-10 rounded-xl overflow-hidden shadow-lg group-hover:scale-105 transition-transform border border-gray-800 bg-white flex items-center justify-center">
+              <img [src]="orgService.org().logoUrl" [alt]="orgService.org().name" class="w-full h-full object-contain p-0.5" />
             </div>
-            <span class="text-xl font-extrabold text-white tracking-tight">Own<span class="text-primary">Bites</span></span>
+            <span class="text-xl font-extrabold text-white tracking-tight">{{orgService.org().name}}</span>
           </div>
-          <span class="text-gray-500 text-sm font-medium">&copy; 2026 OwnBites Limited</span>
+          <span class="text-gray-500 text-sm font-medium">&copy; 2026 {{orgService.org().name}} Limited</span>
         </div>
 
         <!-- Right Side: Available Cities -->
@@ -33,7 +35,7 @@ import { MatIconModule } from '@angular/material/icon';
       </div>
     </footer>
     <div class="bg-gray-100 py-6 px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10">
-      <span class="text-xl md:text-2xl font-bold text-gray-800 text-center md:text-left tracking-tight">For better experience, download the OwnBites app now</span>
+      <span class="text-xl md:text-2xl font-bold text-gray-800 text-center md:text-left tracking-tight">For better experience, download the {{orgService.org().name}} app now</span>
       <div class="flex items-center gap-4">
         <!-- Apple App Store -->
         <a href="#" class="h-12 hover:opacity-80 transition-opacity cursor-pointer">
@@ -49,4 +51,5 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class Footer {
   @Output() changeAddress = new EventEmitter<void>();
+  orgService = inject(OrganizationService);
 }

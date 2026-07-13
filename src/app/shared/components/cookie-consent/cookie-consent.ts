@@ -1,6 +1,7 @@
-import { Component, signal, OnInit, computed } from '@angular/core';
+import { Component, signal, OnInit, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { OrganizationService } from '../../../services/organization';
 
 // ─── Consent record stored in localStorage ───────────────────────
 export interface CookieConsent {
@@ -80,7 +81,7 @@ const CONSENT_VER    = 2;    // increment to force re-consent on policy update
           We use cookies
         </h3>
         <p style="color:#94a3b8;font-size:13px;line-height:1.6;margin:0;">
-          OwnBites uses cookies to remember your address, preferred outlets, and order history,
+          {{orgService.org().name}} uses cookies to remember your address, preferred outlets, and order history,
           and to analyse how the app is used. We <strong style="color:#e2e8f0;">never sell</strong>
           your data. You can customise or withdraw consent at any time.
         </p>
@@ -284,6 +285,7 @@ const CONSENT_VER    = 2;    // increment to force re-consent on policy update
   `
 })
 export class CookieConsentComponent implements OnInit {
+  orgService = inject(OrganizationService);
 
   show            = signal(false);
   showPreferences = signal(false);

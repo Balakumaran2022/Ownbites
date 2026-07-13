@@ -12,6 +12,7 @@ import { UiButton } from '../../shared/components/ui-button/ui-button';
 import { UiCard } from '../../shared/components/ui-card/ui-card';
 import { CartItem } from '../../models';
 import { environment } from '../../../environments/environment';
+import { OrganizationService } from '../../services/organization';
 
 @Component({
   selector: 'app-cart',
@@ -32,7 +33,7 @@ import { environment } from '../../../environments/environment';
             <div class="flex items-start gap-3">
               <mat-icon class="text-white text-3xl">celebration</mat-icon>
               <div>
-                <h3 class="font-extrabold text-base sm:text-lg">Welcome to OwnBites! 🎉</h3>
+                <h3 class="font-extrabold text-base sm:text-lg">Welcome to {{orgService.org().name}}! 🎉</h3>
                 <p class="text-white/95 text-xs sm:text-sm mt-0.5 font-medium leading-relaxed">
                   As a first-time user, you get a special flat 50% discount (up to ₹150) on this order!
                 </p>
@@ -283,6 +284,7 @@ export class Cart implements OnInit {
   orderService = inject(OrderService);
   customerService = inject(CustomerService);
   productService = inject(ProductService);
+  orgService = inject(OrganizationService);
 
   optInNoContact = false;
   couponInput: string = '';

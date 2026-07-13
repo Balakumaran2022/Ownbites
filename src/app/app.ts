@@ -148,10 +148,10 @@ import { environment } from '../environments/environment';
 
           <!-- Footer brand name + selected outlet -->
           <div class="mt-8 flex items-center gap-2 justify-center border-t border-gray-100 pt-5 w-full">
-            <div class="w-6 h-6 bg-orange-600 rounded-md flex items-center justify-center overflow-hidden">
-              <span class="text-white font-black text-xs">OB</span>
+            <div class="w-6 h-6 rounded-md overflow-hidden bg-white border border-gray-100 flex items-center justify-center">
+              <img [src]="organizationService.org().logoUrl" [alt]="organizationService.org().name" class="w-full h-full object-contain" />
             </div>
-            <span class="text-gray-900 font-bold text-sm">OwnBites</span>
+            <span class="text-gray-900 font-bold text-sm">{{ organizationService.org().name }}</span>
             <span class="text-gray-300">•</span>
             <span class="text-gray-500 text-sm font-semibold">{{ getActiveOutletName() }}</span>
           </div>

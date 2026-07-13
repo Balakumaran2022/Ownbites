@@ -8,6 +8,7 @@ import { CustomerService } from '../../services/customer';
 import { AddressService } from '../../services/address';
 import { OrderService } from '../../services/order';
 import { OutletService } from '../../services/outlet';
+import { OrganizationService } from '../../services/organization';
 
 @Component({
   selector: 'app-header',
@@ -18,10 +19,10 @@ import { OutletService } from '../../services/outlet';
       <div class="max-w-7xl mx-auto flex items-center justify-between">
         
         <div class="flex items-center gap-2 cursor-pointer" routerLink="/">
-          <div class="w-10 h-10 bg-[#f4811f] rounded-xl flex items-center justify-center shadow-luxury hover:scale-105 transition-transform">
-            <mat-icon class="text-white font-bold">shopping_cart</mat-icon>
+          <div class="w-10 h-10 rounded-xl overflow-hidden shadow-luxury hover:scale-105 transition-transform border border-gray-100 bg-white flex items-center justify-center">
+            <img [src]="orgService.org().logoUrl" [alt]="orgService.org().name" class="w-full h-full object-contain p-0.5" />
           </div>
-          <span class="text-xl font-bold tracking-tight text-secondary hidden sm:block">Own<span class="text-[#f4811f]">Bites</span></span>
+          <span class="text-xl font-bold tracking-tight text-secondary hidden sm:block">{{orgService.org().name}}</span>
         </div>
 
         <div class="flex items-center gap-4 hidden md:flex">
@@ -99,4 +100,5 @@ export class Header {
   addressService = inject(AddressService);
   orderService = inject(OrderService);
   outletService = inject(OutletService);
+  orgService = inject(OrganizationService);
 }
