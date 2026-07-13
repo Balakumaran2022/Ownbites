@@ -10,6 +10,8 @@ import { environment } from '../../environments/environment';
 })
 export class CartService {
   private http = inject(HttpClient);
+  
+  public cartItems = signal<CartItem[]>([]);
   private cartSubject = new BehaviorSubject<CartItem[]>([]);
   public cart$ = this.cartSubject.asObservable();
 
@@ -17,13 +19,13 @@ export class CartService {
   public selectedCoupon = signal<any | null>(null);
   public discountAmount = signal<number>(0);
 
-  // For compatibility with components using signals/methods
-  cartItems() {
-    return this.cartSubject.value;
+  private updateCartState(items: CartItem[]) {
+    this.cartSubject.next(items);
+    this.cartItems.set(items);
   }
 
   cartSummary() {
-    const items = this.cartSubject.value;
+    const items = this.cartItems();
     const subtotal = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
     const discount = this.discountAmount();
     const taxableAmount = Math.max(0, subtotal - discount);
@@ -48,11 +50,11 @@ export class CartService {
   }
 
   clearCart() {
-    this.cartSubject.next([]);
+    this.updateCartState([]);
   }
 
   updateQuantity(productId: string, quantity: number) {
-    let current = this.cartSubject.value;
+    let current = [...this.cartItems()];
     const item = current.find(i => i.product.id === productId);
     if(item) {
       const oldQty = item.quantity;
@@ -69,7 +71,7 @@ export class CartService {
         this.discountAmount.set(0);
       }
       
-      this.cartSubject.next([...current]);
+      this.updateCartState([...current]);
     }
   }
 
@@ -78,21 +80,20 @@ export class CartService {
       customerPhoneNo: customerPhoneNo,
       outletId: outletId
     }).pipe(map(res => {
-      this.cartSubject.next(res.data.items || []);
+      this.updateCartState(res.data.items || []);
       return res.data;
     }));
   }
 
   addToCart(product: any) {
-    const current = this.cartSubject.value;
+    const current = [...this.cartItems()];
     const existing = current.find(i => i.product.id === product.id);
     if (existing) {
       existing.quantity++;
     } else {
       current.push({ product, quantity: 1 });
     }
-    this.cartSubject.next([...current]);
-    // Optionally call updateCart API here
+    this.updateCartState([...current]);
   }
 
   updateCart(customerPhoneNo: string, outletId: string, items: CartItem[], deliveryType: string): Observable<any> {

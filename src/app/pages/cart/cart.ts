@@ -572,6 +572,20 @@ export class Cart implements OnInit {
     });
   }
   quickAddProduct(product: any) {
+    const msg = this.intimationMessage();
+    const targetCouponCode = msg?.nextCode;
+
     this.cartService.addToCart(product);
+
+    // If adding this item crossed the threshold for the target coupon, apply it automatically!
+    if (targetCouponCode) {
+      const coupon = this.coupons.find(c => c.code === targetCouponCode);
+      if (coupon && this.isEligible(coupon)) {
+        this.applyCoupon(coupon);
+        return;
+      }
+    }
+
+    this.recalculateDiscount();
   }
 }
