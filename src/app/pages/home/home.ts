@@ -483,21 +483,7 @@ export class Home implements OnInit {
 
   scrollToCategory(categoryId: string) {
     this.showMenuSheet.set(false);
-    
-    // Ensure the category is expanded
-    const current = new Set(this.expandedCategories());
-    current.add(categoryId);
-    this.expandedCategories.set(current);
-    
-    // Give Angular a tick to render if it was collapsed
-    setTimeout(() => {
-      const element = document.getElementById('category-' + categoryId);
-      if (element) {
-        // Offset by 100px to account for the sticky header
-        const y = element.getBoundingClientRect().top + window.scrollY - 100;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      }
-    }, 50);
+    this.router.navigate(['/products'], { queryParams: { category: categoryId } });
   }
 
   togglePriceSort() {
