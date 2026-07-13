@@ -63,6 +63,18 @@
   force = true
 
 [[redirects]]
+  from = "/setting/*"
+  to = "https://backend2.owct.me/setting/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/location/*"
+  to = "https://backend2.owct.me/location/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

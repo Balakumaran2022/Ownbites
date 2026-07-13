@@ -9,7 +9,10 @@
       "/outlet/",
       "/item/",
       "/organization/",
-      "/banner/"
+      "/banner/",
+      "/discount/",
+      "/setting/",
+      "/location/"
     ],
     "target": "https://backend2.owct.me",
     "secure": false,
