@@ -50,12 +50,30 @@ export class OrderService {
   }
 
   createOrder(payload: any): Observable<any> {
+    // Demo user: simulate order placement locally without hitting the backend
+    if (this.customerService.isDemoUser) {
+      const mockOrder = {
+        orderId:   'DEMO' + Date.now(),
+        _id:       'demo_order_' + Date.now(),
+        status:    'Pending',
+        createdAt: new Date().toISOString(),
+        orderType: payload.orderType || 'Door Delivery',
+        totalAmount: payload.totalAmount || 0,
+        items: payload.items || [],
+        customerName: payload.customerName || 'Safina',
+        customerPhoneNo: payload.customerPhoneNo || '919385452868'
+      };
+      console.log('[Order] Demo user — simulated order:', mockOrder);
+      return of({ data: { order: mockOrder }, ...mockOrder });
+    }
+
     return this.http.post<any>(`${environment.apiUrl}/cart/create`, payload)
       .pipe(
         tap(res => console.log('[Order] cart/create raw response:', JSON.stringify(res))),
         map(res => res.data || res)
       );
   }
+
 
   placeOrder(payload: any): Observable<any> {
     this.ordersCache$ = null;
